@@ -1,15 +1,14 @@
 # PC Recommender — Server
 
-NestJS + Prisma + PostgreSQL (mismo patrón de carpetas que `pasalasfijas-server`).
+NestJS + Prisma + PostgreSQL.
 
 ## Setup
 
 ```bash
-pnpm install
-cp .env.example .env.local
-# Ajusta DATABASE_URL en .env.local
-pnpm prisma migrate deploy
-pnpm prisma:generate
+cd server
+# crea la BD pc_recommender en Postgres
+pnpm prisma migrate deploy   # o: pnpm prisma:migrate
+pnpm db:seed
 pnpm serve
 ```
 
@@ -23,6 +22,8 @@ API: `http://localhost:5300/api`
 | `.env.development` | Desarrollo |
 | `.env.production` | Producción |
 | `.env.local` | Overrides locales (no se sube a git) |
+
+Copia `.env.example` → `.env.local` y ajusta `DATABASE_URL` antes de migrar.
 
 ## Módulos
 

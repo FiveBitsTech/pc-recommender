@@ -13,6 +13,7 @@ import Header from '@components/layout/horizontal/Header'
 import Navbar from '@components/layout/vertical/Navbar'
 import VerticalFooter from '@components/layout/vertical/Footer'
 import HorizontalFooter from '@components/layout/horizontal/Footer'
+import Customizer from '@core/components/customizer'
 import ScrollToTop from '@core/components/scroll-to-top'
 
 // Util Imports
@@ -46,6 +47,7 @@ const Layout = async props => {
           <i className='ri-arrow-up-line' />
         </Button>
       </ScrollToTop>
+      <Customizer dir={direction} disableDirection />
     </Providers>
   )
 }
