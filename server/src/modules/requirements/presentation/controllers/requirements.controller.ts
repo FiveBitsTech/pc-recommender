@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Post } from '@nestjs/common'
+import { Body, Controller, Get, Param, ParseIntPipe, Post } from '@nestjs/common'
 import { CreateRequirementUseCase } from '../../application/use-cases/create-requirement.use-case'
+import { GetRequirementUseCase } from '../../application/use-cases/get-requirement.use-case'
 import { ListRequirementsUseCase } from '../../application/use-cases/list-requirements.use-case'
 import { CreateRequirementDto } from '../dto/create-requirement.dto'
 
@@ -7,12 +8,18 @@ import { CreateRequirementDto } from '../dto/create-requirement.dto'
 export class RequirementsController {
   constructor(
     private readonly listRequirementsUseCase: ListRequirementsUseCase,
+    private readonly getRequirementUseCase: GetRequirementUseCase,
     private readonly createRequirementUseCase: CreateRequirementUseCase,
   ) {}
 
   @Get()
   findAll() {
     return this.listRequirementsUseCase.execute()
+  }
+
+  @Get(':id')
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.getRequirementUseCase.execute(id)
   }
 
   @Post()
