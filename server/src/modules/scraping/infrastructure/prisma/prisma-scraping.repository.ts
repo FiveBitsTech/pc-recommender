@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from '../../../../shared/prisma/prisma.service'
 import {
+  CreateScrapingHistoryInput,
   ScrapingHistoryRecord,
   ScrapingRepository,
 } from '../../domain/repositories/scraping.repository'
@@ -11,5 +12,17 @@ export class PrismaScrapingRepository implements ScrapingRepository {
 
   findAll(): Promise<ScrapingHistoryRecord[]> {
     return this.prisma.scrapingHistory.findMany({ orderBy: { executedAt: 'desc' } })
+  }
+
+  create(input: CreateScrapingHistoryInput): Promise<ScrapingHistoryRecord> {
+    return this.prisma.scrapingHistory.create({
+      data: {
+        companyId: input.companyId,
+        source: input.source,
+        status: input.status,
+        productsFound: input.productsFound,
+        errorMessage: input.errorMessage ?? null,
+      },
+    })
   }
 }

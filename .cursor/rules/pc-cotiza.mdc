@@ -1,0 +1,12 @@
+---
+description: PC-Cotiza IA — convenciones mínimas del monorepo pc-recommender
+alwaysApply: true
+---
+
+# PC-Cotiza / pc-recommender
+
+- Producto: cotización **guiada** y **neutral** de PCs/componentes (no chat abierto).
+- Stack: `client/` Next+MUI · `server/` Nest+Prisma+PostgreSQL · **pnpm**.
+- Capas Nest: `application` / `domain` / `infrastructure` / `presentation` (como pasalasfijas).
+- Scraping: contrato JSON batch → ingest → `ScrapingHistory`; fixtures antes que live.
+- Skills: `.cursor/skills/pc-cotiza-context`, `.cursor/skills/pc-cotiza-scraping`.

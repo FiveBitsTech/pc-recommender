@@ -2,6 +2,7 @@
 import { VerticalNavProvider } from '@menu/contexts/verticalNavContext'
 import { SettingsProvider } from '@core/contexts/settingsContext'
 import ThemeProvider from '@components/theme'
+import StoreProvider from '@/store/StoreProvider'
 
 // Util Imports
 import { getMode, getSettingsFromCookie, getSystemMode } from '@core/utils/serverHelpers'
@@ -19,7 +20,9 @@ const Providers = async props => {
     <VerticalNavProvider>
       <SettingsProvider settingsCookie={settingsCookie} mode={mode}>
         <ThemeProvider direction={direction} systemMode={systemMode}>
-          {children}
+          <StoreProvider>
+            {children}
+          </StoreProvider>
         </ThemeProvider>
       </SettingsProvider>
     </VerticalNavProvider>

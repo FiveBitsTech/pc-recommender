@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from '../../../../shared/prisma/prisma.service'
-import { ProductListItem, ProductRepository } from '../../domain/repositories/product.repository'
+import { ProductFilterParams, ProductListItem, ProductRepository } from '../../domain/repositories/product.repository'
 
 @Injectable()
 export class PrismaProductRepository implements ProductRepository {
@@ -28,6 +28,27 @@ export class PrismaProductRepository implements ProductRepository {
     })
 
     return product ? this.toListItem(product) : null
+  }
+
+  async findByFilters(filters: ProductFilterParams): Promise<ProductListItem[]> {
+    const products = await this.prisma.product.findMany({
+      where: {
+        category: filters.category,
+        prices: {
+          some: {
+            price: { lte: filters.maxPrice },
+          },
+        },
+      },
+      orderBy: { id: 'desc' },
+      take: filters.limit ?? 5,
+      include: {
+        specs: true,
+        prices: { orderBy: { updatedAt: 'desc' }, take: 1 },
+      },
+    })
+
+    return products.map((p) => this.toListItem(p))
   }
 
   private toListItem(product: {

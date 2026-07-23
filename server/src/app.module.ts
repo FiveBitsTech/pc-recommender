@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
+import { ScheduleModule } from '@nestjs/schedule'
+import { AuthModule } from './modules/auth/auth.module'
 import { CompaniesModule } from './modules/companies/companies.module'
 import { ComparisonsModule } from './modules/comparisons/comparisons.module'
 import { ProductsModule } from './modules/products/products.module'
@@ -7,6 +9,7 @@ import { RecommendationsModule } from './modules/recommendations/recommendations
 import { RequirementsModule } from './modules/requirements/requirements.module'
 import { ScrapingModule } from './modules/scraping/scraping.module'
 import { TagsModule } from './modules/tags/tags.module'
+import { OpenAIModule } from './shared/openai/openai.module'
 import { PrismaModule } from './shared/prisma/prisma.module'
 
 @Module({
@@ -14,13 +17,16 @@ import { PrismaModule } from './shared/prisma/prisma.module'
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: [
-        `.env.${process.env.NODE_ENV ?? 'development'}.local`,
-        `.env.${process.env.NODE_ENV ?? 'development'}`,
-        '.env.local',
+        // `.env.${process.env.NODE_ENV ?? 'development'}.local`,
+        // `.env.${process.env.NODE_ENV ?? 'development'}`,
+        // '.env.local',
         '.env',
       ],
     }),
     PrismaModule,
+    OpenAIModule,
+    ScheduleModule.forRoot(),
+    AuthModule,
     CompaniesModule,
     ProductsModule,
     TagsModule,
