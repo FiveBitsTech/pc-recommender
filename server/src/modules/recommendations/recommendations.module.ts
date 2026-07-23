@@ -3,8 +3,11 @@ import { ListRecommendationsByRequirementUseCase } from './application/use-cases
 import { RECOMMENDATION_REPOSITORY } from './domain/repositories/recommendation.repository'
 import { PrismaRecommendationRepository } from './infrastructure/prisma/prisma-recommendation.repository'
 import { RecommendationsController } from './presentation/controllers/recommendations.controller'
+import { RequirementsModule } from '../requirements/requirements.module'
+import { ProductsModule } from '../products/products.module'
 
 @Module({
+  imports: [RequirementsModule, ProductsModule],
   controllers: [RecommendationsController],
   providers: [
     ListRecommendationsByRequirementUseCase,

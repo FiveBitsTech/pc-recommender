@@ -24,7 +24,14 @@ export type ProductListItem = {
   } | null
 }
 
+export type ProductFilterParams = {
+  category: string
+  maxPrice: number
+  limit?: number
+}
+
 export interface ProductRepository {
   findAll(): Promise<ProductListItem[]>
   findById(id: number): Promise<ProductListItem | null>
+  findByFilters(filters: ProductFilterParams): Promise<ProductListItem[]>
 }
