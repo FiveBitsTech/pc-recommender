@@ -533,49 +533,148 @@ async function main() {
     }),
   ])
 
+  // --- RECOMMENDATIONS: 3 per requirement (Económica / Recomendada / Mejor opción) ---
+
+  // Req 0: gaming + laptop + 5000 + rendimiento
   await prisma.recommendation.createMany({
     data: [
       {
         requirementId: requirements[0].id,
-        productId: createdProducts[1].id,
-        score: 9.2,
-        reason: 'Excelente laptop gaming con RTX 3050 y Ryzen 7.',
+        productId: createdProducts[4].id, // HP Victus 15 — S/3299
+        score: 7.8,
+        reason: 'Opción económica con GTX 1650. Suficiente para gaming casual y juegos en ajustes medios. Gran relación calidad-precio como entrada al gaming.',
       },
       {
         requirementId: requirements[0].id,
-        productId: createdProducts[6].id,
+        productId: createdProducts[1].id, // ASUS ROG Strix — S/4499
+        score: 9.2,
+        reason: 'Mejor equilibrio entre rendimiento y precio. Ryzen 7 6800H + RTX 3050 + 16GB DDR5 permite gaming fluido en FHD y buena multitarea. Recomendada por su RAM DDR5 que asegura futuro.',
+      },
+      {
+        requirementId: requirements[0].id,
+        productId: createdProducts[6].id, // Acer Nitro 5 — S/4799
         score: 9.5,
-        reason: 'La RTX 3060 ofrece mejor rendimiento gaming.',
+        reason: 'Mejor rendimiento gaming del rango. La RTX 3060 6GB supera significativamente a la 3050 en juegos AAA. Pantalla 144Hz IPS ideal para gaming competitivo.',
+      },
+    ],
+  })
+
+  // Req 1: oficina + laptop + 2500 + precio
+  await prisma.recommendation.createMany({
+    data: [
+      {
+        requirementId: requirements[1].id,
+        productId: createdProducts[10].id, // Lenovo V15 — S/2199
+        score: 8.2,
+        reason: 'La opción más económica que cumple con tareas de oficina. i5 + 8GB RAM es suficiente para documentos, hojas de cálculo y navegación. Buen precio.',
       },
       {
         requirementId: requirements[1].id,
-        productId: createdProducts[0].id,
+        productId: createdProducts[0].id, // Lenovo IdeaPad 3 — S/2299
         score: 9.0,
-        reason: 'Ideal para oficina, dentro del presupuesto.',
+        reason: 'Mejor relación precio-rendimiento para oficina. Misma generación de procesador pero con 512GB SSD (el doble de almacenamiento). Ideal para uso diario prolongado.',
+      },
+      {
+        requirementId: requirements[1].id,
+        productId: createdProducts[7].id, // Huawei MateBook D15 — S/2599
+        score: 8.5,
+        reason: 'Diseño premium y ligero para llevar a reuniones. Pantalla FHD IPS con buenos ángulos de visión. Ligeramente sobre presupuesto pero ofrece mejor portabilidad.',
+      },
+    ],
+  })
+
+  // Req 2: diseño gráfico + laptop + 7000 + pantalla
+  await prisma.recommendation.createMany({
+    data: [
+      {
+        requirementId: requirements[2].id,
+        productId: createdProducts[5].id, // Dell Inspiron 14 — S/4199
+        score: 7.5,
+        reason: 'Opción económica para diseño básico. i7 + 16GB DDR5 manejan Photoshop y diseño vectorial bien. Pantalla FHD+ IPS aceptable para trabajo de color.',
       },
       {
         requirementId: requirements[2].id,
-        productId: createdProducts[3].id,
+        productId: createdProducts[13].id, // ASUS ZenBook 14 OLED — S/5299
+        score: 9.6,
+        reason: 'Pantalla OLED 2.8K con cobertura DCI-P3 del 100%. Colores precisos y contraste infinito ideales para diseño gráfico profesional. i7 + 16GB LPDDR5 para flujo creativo sin interrupciones.',
+      },
+      {
+        requirementId: requirements[2].id,
+        productId: createdProducts[3].id, // MacBook Air M2 — S/5499
         score: 9.3,
-        reason: 'Pantalla Liquid Retina excepcional para diseño.',
+        reason: 'Pantalla Liquid Retina excepcional. Chip M2 optimizado para apps creativas de Adobe y Affinity. Mejor batería del mercado (18h). Ecosistema Apple es ventaja si ya usas iPhone/iPad.',
+      },
+    ],
+  })
+
+  // Req 3: programación + laptop + 4500 + rendimiento
+  await prisma.recommendation.createMany({
+    data: [
+      {
+        requirementId: requirements[3].id,
+        productId: createdProducts[14].id, // ThinkPad E14 — S/3599
+        score: 8.0,
+        reason: 'Opción económica con teclado ThinkPad legendario para programar todo el día. i5-1240P suficiente para IDEs y Docker básico. Windows 11 Pro incluido.',
       },
       {
         requirementId: requirements[3].id,
-        productId: createdProducts[5].id,
+        productId: createdProducts[5].id, // Dell Inspiron 14 — S/4199
         score: 9.1,
-        reason: '16GB RAM e i7 ideales para desarrollo.',
+        reason: 'Mejor equilibrio para desarrollo. i7-1360P + 16GB DDR5 manejan múltiples IDEs, Docker, y máquinas virtuales sin problemas. Pantalla 14" FHD+ cómoda para leer código.',
+      },
+      {
+        requirementId: requirements[3].id,
+        productId: createdProducts[1].id, // ASUS ROG Strix — S/4499
+        score: 8.4,
+        reason: 'Máximo rendimiento del rango. Ryzen 7 + 16GB DDR5 + 512GB NVMe compilan rápido. La RTX 3050 ayuda en tareas de ML básico. Pantalla 15.6" si prefieres más espacio visual.',
+      },
+    ],
+  })
+
+  // Req 4: gaming + desktop + 10000 + rendimiento
+  await prisma.recommendation.createMany({
+    data: [
+      {
+        requirementId: requirements[4].id,
+        productId: createdProducts[8].id, // Legion Tower 5 — S/6999
+        score: 9.0,
+        reason: 'Excelente desktop gaming sin gastar todo el presupuesto. i7-12700 + RTX 3070 corren cualquier juego actual en Ultra a 1440p. Sobra presupuesto para monitor gaming.',
       },
       {
         requirementId: requirements[4].id,
-        productId: createdProducts[11].id,
+        productId: createdProducts[12].id, // PC Coolbox Ryzen Pro — S/9499
         score: 9.9,
-        reason: 'RTX 3080 + Ryzen 9 para gaming extremo.',
+        reason: 'Bestia absoluta. RTX 3080 + Ryzen 9 5900X + 32GB RAM es la combinación definitiva para gaming 4K y creación de contenido. Futuro asegurado por 4-5 años sin upgrades.',
+      },
+      {
+        requirementId: requirements[4].id,
+        productId: createdProducts[2].id, // HP ProDesk 400 — S/3199
+        score: 6.5,
+        reason: 'Opción ultra-económica si solo juegas títulos livianos o eSports. i5-12500 con UHD 770 maneja League of Legends y Valorant a buen FPS. Ideal si priorizas productividad sobre gaming.',
+      },
+    ],
+  })
+
+  // Req 5: estudio + laptop + 2000 + precio
+  await prisma.recommendation.createMany({
+    data: [
+      {
+        requirementId: requirements[5].id,
+        productId: createdProducts[9].id, // HP 250 G9 — S/1599
+        score: 7.5,
+        reason: 'La más económica. i3 + 4GB RAM es suficiente para documentos, presentaciones y navegación web. Sin Windows incluido (puedes instalar Linux gratis).',
       },
       {
         requirementId: requirements[5].id,
-        productId: createdProducts[9].id,
-        score: 8.0,
-        reason: 'Opción económica para estudios.',
+        productId: createdProducts[10].id, // Lenovo V15 — S/2199
+        score: 8.8,
+        reason: 'Mejor opción para estudios. i5 + 8GB RAM + Windows 11 incluido. Maneja clases en Zoom, Office completo, y navegación pesada sin lag.',
+      },
+      {
+        requirementId: requirements[5].id,
+        productId: createdProducts[0].id, // Lenovo IdeaPad 3 — S/2299
+        score: 8.3,
+        reason: 'Ligeramente sobre presupuesto pero con 512GB SSD (el doble). Si guardas muchos archivos de la universidad, vale la inversión extra.',
       },
     ],
   })
