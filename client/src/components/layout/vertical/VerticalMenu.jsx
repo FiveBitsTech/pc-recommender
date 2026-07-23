@@ -58,6 +58,9 @@ const VerticalMenu = ({ scrollMenu }) => {
         <MenuItem href='/home' icon={<i className='ri-home-smile-line' />}>
           Home
         </MenuItem>
+        <MenuItem href='/requirements' icon={<i className='ri-robot-2-line' />}>
+          Asesor IA
+        </MenuItem>
         <MenuItem href='/about' icon={<i className='ri-information-line' />}>
           About
         </MenuItem>
