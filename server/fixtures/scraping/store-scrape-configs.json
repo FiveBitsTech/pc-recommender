@@ -1,0 +1,92 @@
+{
+  "memory-kings": {
+    "baseUrl": "https://www.memorykings.pe",
+    "platform": "custom-php",
+    "notes": "Listados por /listados/{id}/... cargan mejor que algunas subcategorías. Productos en /producto/{id}/{slug}.",
+    "categories": [
+      { "name": "laptops", "url": "https://www.memorykings.pe/subcategorias/19/laptops" },
+      { "name": "laptops-ryzen-7", "url": "https://www.memorykings.pe/listados/388/laptops-ryzen-7" },
+      { "name": "procesadores", "url": "https://www.memorykings.pe/subcategorias/26/procesadores" },
+      { "name": "memorias-ram", "url": "https://www.memorykings.pe/subcategorias/20/memorias-ram" },
+      { "name": "placas-madre", "url": "https://www.memorykings.pe/subcategorias/27/placas-madre" },
+      { "name": "discos-internos", "url": "https://www.memorykings.pe/subcategorias/57/discos-duro-almacenamiento-interno" },
+      { "name": "case-fuentes", "url": "https://www.memorykings.pe/subcategorias/29/case-fuentes" },
+      { "name": "monitores", "url": "https://www.memorykings.pe/subcategorias/31/monitores-pantallas" },
+      { "name": "pcs-desktop", "url": "https://www.memorykings.pe/subcategorias/11/pcs-desktop-de-marca" }
+    ],
+    "sampleProductUrl": "https://www.memorykings.pe/producto/355762/laptop-ryzen-7-170-asus-tuf-gaming-a15-fa506ncq",
+    "pagination": {
+      "type": "link",
+      "nextSelector": "a[rel='next'], a.siguiente, .pagination a.next",
+      "start": 1
+    },
+    "listing": {
+      "productLinkSelector": "a[href*='/producto/']",
+      "waitMs": 2500,
+      "maxPages": 20
+    },
+    "product": {
+      "name": "h1",
+      "price": ".price.pt-1, .price",
+      "priceCurrencyHint": "S/",
+      "image": "meta[property='og:image'], img[src*='cdn.memorykings.pe/files']",
+      "specs": "table"
+    }
+  },
+  "sercoplus": {
+    "baseUrl": "https://sercoplus.com",
+    "platform": "unknown",
+    "status": "blocked_cloudflare",
+    "notes": "Al 2026-07-23 responde challenge Cloudflare (403/JS challenge). Selectores pendientes de validación manual con browser real o allowlist. No scrapear en CI hasta resolver anti-bot.",
+    "categories": [],
+    "sampleProductUrl": null,
+    "pagination": {
+      "type": "unknown",
+      "param": "page",
+      "start": 1
+    },
+    "listing": {
+      "productLinkSelector": "a[href*='producto'], a[href*='product']",
+      "maxPages": 10
+    },
+    "product": {
+      "name": "h1",
+      "price": ".price, [class*='price'], [class*='precio']",
+      "image": "meta[property='og:image']",
+      "specs": "table, .specs, .product-attributes"
+    },
+    "antiBot": {
+      "cloudflare": true,
+      "requiresPlaywrightStealth": true
+    }
+  },
+  "impacto": {
+    "baseUrl": "https://www.impacto.com.pe",
+    "platform": "nextjs",
+    "notes": "Catálogo vía /search?category=.... Fichas en /producto/{slug}. Precio principal en span.text-4xl. Specs en table.w-full.",
+    "categories": [
+      { "name": "laptops", "url": "https://www.impacto.com.pe/search?category=LAPTOP" },
+      { "name": "procesadores", "url": "https://www.impacto.com.pe/search?category=PROCESADOR" },
+      { "name": "monitores", "url": "https://www.impacto.com.pe/search?category=MONITORES" },
+      { "name": "combo-pc", "url": "https://www.impacto.com.pe/search?category=COMBO&subcategory=COMBO%20PC" }
+    ],
+    "sampleProductUrl": "https://www.impacto.com.pe/producto/laptop-dell-pro-core-ultra-7-150u-pc16250-40vpg-pantalla-16-ram-16gb-ssd-512gb-win11-pronegro-22148",
+    "pagination": {
+      "type": "client",
+      "notes": "Next.js; puede ser scroll/infinite o botones. Validar page/query en runtime.",
+      "start": 1
+    },
+    "listing": {
+      "productLinkSelector": "a[href*='/producto/']",
+      "waitMs": 3000,
+      "maxPages": 20
+    },
+    "product": {
+      "name": "h1",
+      "price": "span.text-gray-900.font-bold.text-4xl, span.text-4xl",
+      "priceCurrencyHint": "S/",
+      "image": "meta[property='og:image'], img[src*='storage.googleapis.com/imagenesimpactoperu']",
+      "specs": "table.w-full.text-left, table.w-full"
+    }
+  }
+}

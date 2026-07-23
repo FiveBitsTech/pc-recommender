@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
+import { ScheduleModule } from '@nestjs/schedule'
+import { AuthModule } from './modules/auth/auth.module'
 import { CompaniesModule } from './modules/companies/companies.module'
 import { ComparisonsModule } from './modules/comparisons/comparisons.module'
 import { ProductsModule } from './modules/products/products.module'
@@ -21,6 +23,8 @@ import { PrismaModule } from './shared/prisma/prisma.module'
       ],
     }),
     PrismaModule,
+    ScheduleModule.forRoot(),
+    AuthModule,
     CompaniesModule,
     ProductsModule,
     TagsModule,
