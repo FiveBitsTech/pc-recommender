@@ -61,7 +61,7 @@ async function main() {
       name: 'Memory Kings',
       website: 'https://www.memorykings.pe/',
       active: true,
-      scrape_config: configs['memory-kings'],
+      scrapeConfig: configs['memory-kings'],
     },
   })
   const sercoplus = await prisma.company.create({
@@ -70,7 +70,7 @@ async function main() {
       name: 'Sercoplus',
       website: 'https://sercoplus.com/',
       active: true,
-      scrape_config: configs.sercoplus,
+      scrapeConfig: configs.sercoplus,
     },
   })
   const impacto = await prisma.company.create({
@@ -79,7 +79,7 @@ async function main() {
       name: 'Impacto',
       website: 'https://www.impacto.com.pe/',
       active: true,
-      scrape_config: configs.impacto,
+      scrapeConfig: configs.impacto,
     },
   })
 
@@ -631,7 +631,7 @@ async function main() {
         source: 'sercoplus',
         status: 'failed',
         productsFound: 0,
-        error_message: 'Cloudflare challenge — selectors pending',
+        errorMessage: 'Cloudflare challenge — selectors pending',
         executedAt: now,
       },
       {
