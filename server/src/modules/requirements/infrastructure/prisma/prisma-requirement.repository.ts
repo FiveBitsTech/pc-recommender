@@ -11,7 +11,11 @@ export class PrismaRequirementRepository implements RequirementRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   findAll(): Promise<RequirementRecord[]> {
-    return this.prisma.userRequirement.findMany({ orderBy: { id: 'desc' } })
+    return this.prisma.userRequirement.findMany({ orderBy: { createdAt: 'desc' } })
+  }
+
+  findById(id: number): Promise<RequirementRecord | null> {
+    return this.prisma.userRequirement.findUnique({ where: { id } })
   }
 
   create(input: CreateRequirementInput): Promise<RequirementRecord> {
