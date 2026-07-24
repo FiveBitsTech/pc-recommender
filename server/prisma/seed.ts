@@ -497,6 +497,76 @@ async function main() {
 
   console.log(`Created ${createdProducts.length} products`)
 
+  // --- INDIVIDUAL COMPONENTS (for PC Builder) ---
+  const componentsData = [
+    // Procesadores
+    { companyId: memoryKings.id, name: 'Procesador AMD Ryzen 5 5600X', brand: 'AMD', model: 'Ryzen 5 5600X', category: 'procesador', productUrl: 'https://www.memorykings.pe/ryzen-5-5600x', imageUrl: null, price: 649.00, tagIds: [tGaming.id] },
+    { companyId: memoryKings.id, name: 'Procesador AMD Ryzen 7 5700X', brand: 'AMD', model: 'Ryzen 7 5700X', category: 'procesador', productUrl: 'https://www.memorykings.pe/ryzen-7-5700x', imageUrl: null, price: 899.00, tagIds: [tGaming.id, tProgramacion.id] },
+    { companyId: memoryKings.id, name: 'Procesador AMD Ryzen 9 5900X', brand: 'AMD', model: 'Ryzen 9 5900X', category: 'procesador', productUrl: 'https://www.memorykings.pe/ryzen-9-5900x', imageUrl: null, price: 1399.00, tagIds: [tWorkstation.id, tPremium.id] },
+    { companyId: impacto.id, name: 'Procesador Intel Core i5-12400F', brand: 'Intel', model: 'Core i5-12400F', category: 'procesador', productUrl: 'https://www.impacto.com.pe/i5-12400f', imageUrl: null, price: 599.00, tagIds: [tGaming.id, tPresupuesto.id] },
+    { companyId: impacto.id, name: 'Procesador Intel Core i5-13600KF', brand: 'Intel', model: 'Core i5-13600KF', category: 'procesador', productUrl: 'https://www.impacto.com.pe/i5-13600kf', imageUrl: null, price: 1099.00, tagIds: [tGaming.id, tProgramacion.id] },
+    { companyId: sercoplus.id, name: 'Procesador Intel Core i7-13700K', brand: 'Intel', model: 'Core i7-13700K', category: 'procesador', productUrl: 'https://sercoplus.com/i7-13700k', imageUrl: null, price: 1599.00, tagIds: [tWorkstation.id, tPremium.id] },
+    // Placas madre
+    { companyId: memoryKings.id, name: 'Placa Madre ASUS B550M-A WiFi', brand: 'ASUS', model: 'PRIME B550M-A WiFi', category: 'placa madre', productUrl: 'https://www.memorykings.pe/asus-b550m-a', imageUrl: null, price: 389.00, tagIds: [tGaming.id] },
+    { companyId: memoryKings.id, name: 'Placa Madre MSI B550 GAMING GEN3', brand: 'MSI', model: 'B550 GAMING GEN3', category: 'placa madre', productUrl: 'https://www.memorykings.pe/msi-b550-gaming', imageUrl: null, price: 449.00, tagIds: [tGaming.id] },
+    { companyId: impacto.id, name: 'Placa Madre Gigabyte B660M DS3H', brand: 'Gigabyte', model: 'B660M DS3H DDR4', category: 'placa madre', productUrl: 'https://www.impacto.com.pe/gigabyte-b660m', imageUrl: null, price: 359.00, tagIds: [tPresupuesto.id] },
+    { companyId: impacto.id, name: 'Placa Madre MSI PRO Z690-A', brand: 'MSI', model: 'PRO Z690-A DDR4', category: 'placa madre', productUrl: 'https://www.impacto.com.pe/msi-z690-a', imageUrl: null, price: 699.00, tagIds: [tPremium.id] },
+    // RAM
+    { companyId: memoryKings.id, name: 'Memoria RAM Kingston Fury Beast 16GB DDR4 3200MHz', brand: 'Kingston', model: 'Fury Beast 16GB', category: 'ram', productUrl: 'https://www.memorykings.pe/kingston-fury-16gb', imageUrl: null, price: 179.00, tagIds: [tGaming.id, tPresupuesto.id] },
+    { companyId: memoryKings.id, name: 'Memoria RAM Kingston Fury Beast 32GB (2x16) DDR4 3200MHz', brand: 'Kingston', model: 'Fury Beast 32GB Kit', category: 'ram', productUrl: 'https://www.memorykings.pe/kingston-fury-32gb', imageUrl: null, price: 339.00, tagIds: [tWorkstation.id, tProgramacion.id] },
+    { companyId: sercoplus.id, name: 'Memoria RAM Corsair Vengeance 16GB DDR5 5600MHz', brand: 'Corsair', model: 'Vengeance DDR5 16GB', category: 'ram', productUrl: 'https://sercoplus.com/corsair-ddr5-16gb', imageUrl: null, price: 289.00, tagIds: [tPremium.id] },
+    { companyId: sercoplus.id, name: 'Memoria RAM Corsair Vengeance 32GB (2x16) DDR5 5600MHz', brand: 'Corsair', model: 'Vengeance DDR5 32GB Kit', category: 'ram', productUrl: 'https://sercoplus.com/corsair-ddr5-32gb', imageUrl: null, price: 529.00, tagIds: [tPremium.id, tWorkstation.id] },
+    // Tarjetas gráficas
+    { companyId: memoryKings.id, name: 'Tarjeta Gráfica MSI GeForce RTX 4060 Ventus 2X 8GB', brand: 'MSI', model: 'RTX 4060 Ventus 2X', category: 'gpu', productUrl: 'https://www.memorykings.pe/msi-rtx4060', imageUrl: null, price: 1349.00, tagIds: [tGaming.id] },
+    { companyId: memoryKings.id, name: 'Tarjeta Gráfica ASUS Dual RTX 4070 OC 12GB', brand: 'ASUS', model: 'Dual RTX 4070 OC', category: 'gpu', productUrl: 'https://www.memorykings.pe/asus-rtx4070', imageUrl: null, price: 2499.00, tagIds: [tGaming.id, tPremium.id] },
+    { companyId: impacto.id, name: 'Tarjeta Gráfica Gigabyte RTX 4060 Ti Eagle 8GB', brand: 'Gigabyte', model: 'RTX 4060 Ti Eagle', category: 'gpu', productUrl: 'https://www.impacto.com.pe/gigabyte-rtx4060ti', imageUrl: null, price: 1799.00, tagIds: [tGaming.id] },
+    { companyId: sercoplus.id, name: 'Tarjeta Gráfica EVGA RTX 3060 XC 12GB', brand: 'EVGA', model: 'RTX 3060 XC Gaming', category: 'gpu', productUrl: 'https://sercoplus.com/evga-rtx3060', imageUrl: null, price: 1149.00, tagIds: [tGaming.id, tPresupuesto.id] },
+    // SSD
+    { companyId: memoryKings.id, name: 'SSD Kingston NV2 1TB NVMe M.2', brand: 'Kingston', model: 'NV2 1TB', category: 'ssd', productUrl: 'https://www.memorykings.pe/kingston-nv2-1tb', imageUrl: null, price: 219.00, tagIds: [tPresupuesto.id] },
+    { companyId: memoryKings.id, name: 'SSD Samsung 980 PRO 1TB NVMe M.2', brand: 'Samsung', model: '980 PRO 1TB', category: 'ssd', productUrl: 'https://www.memorykings.pe/samsung-980pro-1tb', imageUrl: null, price: 449.00, tagIds: [tPremium.id] },
+    { companyId: impacto.id, name: 'SSD WD Black SN770 500GB NVMe M.2', brand: 'Western Digital', model: 'SN770 500GB', category: 'ssd', productUrl: 'https://www.impacto.com.pe/wd-sn770-500gb', imageUrl: null, price: 179.00, tagIds: [tPresupuesto.id] },
+    { companyId: impacto.id, name: 'SSD WD Black SN770 1TB NVMe M.2', brand: 'Western Digital', model: 'SN770 1TB', category: 'ssd', productUrl: 'https://www.impacto.com.pe/wd-sn770-1tb', imageUrl: null, price: 289.00, tagIds: [] },
+    // Fuentes de poder
+    { companyId: memoryKings.id, name: 'Fuente de Poder EVGA 600W 80+ Bronze', brand: 'EVGA', model: '600 BR', category: 'fuente', productUrl: 'https://www.memorykings.pe/evga-600br', imageUrl: null, price: 219.00, tagIds: [tPresupuesto.id] },
+    { companyId: memoryKings.id, name: 'Fuente de Poder Corsair RM750 80+ Gold', brand: 'Corsair', model: 'RM750', category: 'fuente', productUrl: 'https://www.memorykings.pe/corsair-rm750', imageUrl: null, price: 399.00, tagIds: [tPremium.id] },
+    { companyId: impacto.id, name: 'Fuente de Poder Seasonic Focus GX-650 80+ Gold', brand: 'Seasonic', model: 'Focus GX-650', category: 'fuente', productUrl: 'https://www.impacto.com.pe/seasonic-gx650', imageUrl: null, price: 359.00, tagIds: [tGaming.id] },
+    // Cases
+    { companyId: memoryKings.id, name: 'Case Cougar MX330-G Air Mid Tower', brand: 'Cougar', model: 'MX330-G Air', category: 'case', productUrl: 'https://www.memorykings.pe/cougar-mx330g', imageUrl: null, price: 169.00, tagIds: [tPresupuesto.id] },
+    { companyId: impacto.id, name: 'Case NZXT H5 Flow Mid Tower', brand: 'NZXT', model: 'H5 Flow', category: 'case', productUrl: 'https://www.impacto.com.pe/nzxt-h5-flow', imageUrl: null, price: 399.00, tagIds: [tPremium.id] },
+    { companyId: sercoplus.id, name: 'Case Cooler Master MasterBox TD500 Mesh', brand: 'Cooler Master', model: 'TD500 Mesh', category: 'case', productUrl: 'https://sercoplus.com/cm-td500', imageUrl: null, price: 329.00, tagIds: [tGaming.id] },
+  ]
+
+  for (const c of componentsData) {
+    const product = await prisma.product.create({
+      data: {
+        companyId: c.companyId,
+        name: c.name,
+        brand: c.brand,
+        model: c.model,
+        category: c.category,
+        productUrl: c.productUrl,
+        imageUrl: c.imageUrl,
+      },
+    })
+
+    await prisma.productPrice.create({
+      data: {
+        productId: product.id,
+        price: c.price,
+        currency: 'PEN',
+        available: true,
+      },
+    })
+
+    for (const tagId of c.tagIds) {
+      await prisma.productTagRelation.create({
+        data: { productId: product.id, tagId },
+      })
+    }
+  }
+
+  console.log(`Created ${componentsData.length} individual components`)
+
   const requirements = await Promise.all([
     prisma.userRequirement.create({
       data: { usageType: 'gaming', budget: 5000.0, priority: 'rendimiento', deviceType: 'laptop' },
