@@ -69,12 +69,23 @@ export class ListRecommendationsByRequirementUseCase {
       budget,
       priority: requirement.priority,
       deviceType: requirement.deviceType,
+      brandPreference: requirement.brandPreference ?? null,
       products: productsForAI,
     })
 
-    // If AI returned results, map them
+    // If AI returned results, persist and map them
     if (aiRecommendations.length > 0) {
       const productMap = new Map(products.map((p) => [p.id, p]))
+
+      // Persist recommendations in DB so they survive page reload
+      await this.recommendationRepository.createMany(
+        aiRecommendations.map((rec) => ({
+          requirementId,
+          productId: rec.productId,
+          score: rec.score,
+          reason: rec.reason,
+        })),
+      )
 
       const result = aiRecommendations.map((rec) => {
         const product = productMap.get(rec.productId)!
@@ -86,6 +97,10 @@ export class ListRecommendationsByRequirementUseCase {
           reason: rec.reason,
           advantages: rec.advantages ?? [],
           disadvantages: rec.disadvantages ?? [],
+          limitations: rec.limitations ?? [],
+          upgradeOptions: rec.upgradeOptions ?? [],
+          overpriced: rec.overpriced ?? false,
+          priceVerdict: rec.priceVerdict ?? null,
           createdAt: new Date(),
           product: {
             id: product.id,
