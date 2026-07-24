@@ -6,6 +6,7 @@ export type RequirementRecord = {
   budget: { toString(): string }
   priority: string
   deviceType: string
+  brandPreference: string | null
   createdAt: Date
 }
 
@@ -14,6 +15,7 @@ export type CreateRequirementInput = {
   budget: number
   priority: string
   deviceType: string
+  brandPreference?: string | null
 }
 
 export interface RequirementRepository {

@@ -25,6 +25,7 @@ export class PrismaRequirementRepository implements RequirementRepository {
         budget: input.budget,
         priority: input.priority,
         deviceType: input.deviceType,
+        brandPreference: input.brandPreference ?? null,
       },
     })
   }
