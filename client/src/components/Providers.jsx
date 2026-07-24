@@ -3,6 +3,7 @@ import { VerticalNavProvider } from '@menu/contexts/verticalNavContext'
 import { SettingsProvider } from '@core/contexts/settingsContext'
 import ThemeProvider from '@components/theme'
 import StoreProvider from '@/store/StoreProvider'
+import AppReactToastify from '@/libs/styles/AppReactToastify'
 
 // Util Imports
 import { getMode, getSettingsFromCookie, getSystemMode } from '@core/utils/serverHelpers'
@@ -22,6 +23,7 @@ const Providers = async props => {
         <ThemeProvider direction={direction} systemMode={systemMode}>
           <StoreProvider>
             {children}
+            <AppReactToastify direction={direction} hideProgressBar />
           </StoreProvider>
         </ThemeProvider>
       </SettingsProvider>

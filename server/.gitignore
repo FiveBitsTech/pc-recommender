@@ -43,6 +43,7 @@ lerna-debug.log*
 # temp directory
 .temp
 .tmp
+prisma/schema.prisma.pre-pull.bak
 
 # Runtime data
 pids

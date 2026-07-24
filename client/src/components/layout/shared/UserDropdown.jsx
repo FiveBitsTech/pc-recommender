@@ -22,6 +22,7 @@ import Button from '@mui/material/Button'
 
 // Hook Imports
 import { useSettings } from '@core/hooks/useSettings'
+import { useAuthUser } from '@/hooks/useAuthUser'
 
 // Styled component for badge content
 const BadgeContentSpan = styled('span')({
@@ -43,6 +44,7 @@ const UserDropdown = () => {
   // Hooks
   const router = useRouter()
   const { settings } = useSettings()
+  const { user, logout } = useAuthUser()
 
   const handleDropdownOpen = () => {
     !open ? setOpen(true) : setOpen(false)
@@ -61,9 +63,13 @@ const UserDropdown = () => {
   }
 
   const handleUserLogout = async () => {
-    // Redirect to login page
+    logout()
     router.push('/login')
   }
+
+  const displayName = user?.name || user?.email || 'Usuario'
+  const displayEmail = user?.email || ''
+  const displayRole = user?.role === 'ADMIN' ? 'Admin' : 'Usuario'
 
   return (
     <>
@@ -101,12 +107,14 @@ const UserDropdown = () => {
               <ClickAwayListener onClickAway={e => handleDropdownClose(e)}>
                 <MenuList>
                   <div className='flex items-center plb-2 pli-4 gap-2' tabIndex={-1}>
-                    <Avatar alt='John Doe' src='/images/avatars/1.png' />
+                    <Avatar alt={displayName} src='/images/avatars/1.png' />
                     <div className='flex items-start flex-col'>
                       <Typography className='font-medium' color='text.primary'>
-                        John Doe
+                        {displayName}
                       </Typography>
-                      <Typography variant='caption'>admin@materio.com</Typography>
+                      <Typography variant='caption'>
+                        {displayEmail || displayRole}
+                      </Typography>
                     </div>
                   </div>
                   <Divider className='mlb-1' />

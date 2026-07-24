@@ -118,8 +118,8 @@ model UserRequirement {
   budget          Decimal          @db.Decimal(12, 2)
   priority        String           @db.VarChar(100)
   deviceType      String           @map("device_type") @db.VarChar(100)
-  brandPreference String?          @map("brand_preference") @db.VarChar(50)
   createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  brandPreference String?          @map("brand_preference") @db.VarChar(50)
   recommendations Recommendation[]
 
   @@map("user_requirements")

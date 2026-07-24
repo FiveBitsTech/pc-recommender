@@ -165,6 +165,11 @@ CONOCIMIENTO TÉCNICO DE PROCESADORES Y GRÁFICOS:
   } | null> {
     const { usageType, budget, brandPreference, availableComponents } = params
 
+    if (!this.client) {
+      console.warn('OPENAI_API_KEY no configurada: PC build IA omitido')
+      return null
+    }
+
     const brandNote = brandPreference
       ? `\n- Preferencia de procesador: ${brandPreference}`
       : ''
@@ -220,7 +225,9 @@ Responde SOLO en JSON (sin markdown):
 }`
 
     try {
-      const response = await this.client.chat.completions.create({
+      const client = this.client
+      if (!client) return null
+      const response = await client.chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.3,
@@ -247,6 +254,11 @@ Responde SOLO en JSON (sin markdown):
     specs_comparison: Array<{ category: string; product1: string; product2: string; winner: string }>
   } | null> {
     const { product1, product2 } = params
+
+    if (!this.client) {
+      console.warn('OPENAI_API_KEY no configurada: comparación IA omitida')
+      return null
+    }
 
     const formatProduct = (p: ProductForAI) =>
       `${p.name} | ${p.brand} | S/${p.price} | CPU: ${p.specs?.processor ?? 'N/A'} | GPU: ${p.specs?.gpu ?? 'N/A'} | RAM: ${p.specs?.ram ?? 'N/A'} | Disco: ${p.specs?.storage ?? 'N/A'} | Pantalla: ${p.specs?.screen ?? 'N/A'}`
@@ -276,7 +288,8 @@ Responde SOLO en JSON (sin markdown):
       }`
 
     try {
-      const response = await this.client.chat.completions.create({
+      const client = this.client
+      const response = await client.chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.3,
@@ -290,6 +303,114 @@ Responde SOLO en JSON (sin markdown):
     } catch (error) {
       console.error('OpenAI comparison error:', error)
 
+      return null
+    }
+  }
+
+  async generateScrapeConfig(params: {
+    name: string
+    website: string
+    pageHints?: Array<{
+      url: string
+      title: string | null
+      sampleLinks: string[]
+      categoryLinks?: string[]
+      bodySnippet: string
+      htmlSnippet: string
+      error?: string
+    }>
+  }): Promise<Record<string, unknown> | null> {
+    if (!this.client) {
+      console.warn('OPENAI_API_KEY no configurada: scrapeConfig IA omitido')
+      return null
+    }
+
+    const { name, website, pageHints = [] } = params
+
+    const hintsBlock =
+      pageHints.length > 0
+        ? pageHints
+            .map(
+              (h, i) =>
+                `--- PAGINA ${i + 1}: ${h.url}
+title: ${h.title ?? 'N/A'}
+error: ${h.error ?? 'none'}
+categoryLinks detectados:
+${(h.categoryLinks || []).slice(0, 30).join('\n') || '(ninguno)'}
+productLinks / sampleLinks:
+${(h.sampleLinks || []).slice(0, 25).join('\n') || '(ninguno)'}
+bodySnippet:
+${h.bodySnippet || '(vacío)'}
+htmlSnippet:
+${h.htmlSnippet || '(vacío)'}`,
+            )
+            .join('\n\n')
+        : '(sin HTML capturado; usa tu conocimiento de la tienda y patrones típicos de e-commerce PE de hardware)'
+
+    const prompt = `Eres un experto en web scraping con Playwright.
+El usuario te pide exactamente esto (como en ChatGPT):
+"Establéceme un JSON robusto de la web ${website} (tienda: ${name}) para la finalidad de hacerle scraping de catálogo/productos."
+
+TU TRABAJO:
+- Analiza la web (nombre + URL + evidencia HTML/links si hay).
+- TÚ identificas las URLs de categorías relevantes (laptops, procesadores, RAM, monitores, etc.).
+- TÚ defines selectores, paginación y anti-bot.
+- El usuario NO te pasa URLs de categoría; debes descubrirlas.
+
+EVIDENCIA CAPTURADA DEL SITIO:
+${hintsBlock}
+
+REGLAS:
+1. Responde SOLO JSON válido (sin markdown ni texto extra).
+2. categories DEBE incluir URLs reales detectadas en la evidencia cuando existan. Si no hay evidencia, propone rutas plausibles del mismo dominio y acláralo en notes.
+3. listing.productLinkSelector obligatorio y estable.
+4. product: name, price, priceCurrencyHint ("S/"), image, specs.
+5. pagination.type: link | query | client | unknown.
+6. Si hay Cloudflare/anti-bot, márcalo en antiBot y notes.
+7. baseUrl = origen canónico de ${website}.
+8. Incluye sampleProductUrl si aparece un link de ficha claro.
+9. JSON robusto y listo para scrapear (waitMs, maxPages).
+
+SCHEMA EXACTO:
+{
+  "baseUrl": "https://...",
+  "platform": "unknown|nextjs|custom-php|woocommerce|shopify|other",
+  "notes": "string",
+  "categories": [{ "name": "laptops", "url": "https://..." }],
+  "sampleProductUrl": "https://... o null",
+  "pagination": { "type": "link|query|client|unknown", "nextSelector": "string?", "param": "page?", "start": 1 },
+  "listing": { "productLinkSelector": "string", "waitMs": 2500, "maxPages": 20 },
+  "product": {
+    "name": "string",
+    "price": "string",
+    "priceCurrencyHint": "S/",
+    "image": "string",
+    "specs": "string"
+  },
+  "antiBot": { "cloudflare": false, "requiresPlaywrightStealth": false }
+}`
+
+    try {
+      const response = await this.client.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.2,
+        max_tokens: 1800,
+        response_format: { type: 'json_object' },
+      })
+
+      const content = response.choices[0]?.message?.content?.trim() ?? '{}'
+      const jsonStr = content.replace(/^```json?\n?/, '').replace(/\n?```$/, '')
+      const parsed = JSON.parse(jsonStr) as Record<string, unknown>
+
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        return null
+      }
+
+      if (!parsed.baseUrl) parsed.baseUrl = website
+      return parsed
+    } catch (error) {
+      console.error('OpenAI scrapeConfig error:', error)
       return null
     }
   }

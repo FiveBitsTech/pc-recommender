@@ -38,7 +38,8 @@ const themeConfig = {
     contentWidth: 'compact', // 'compact', 'wide'
     detached: true //! true, false (This will not work in the Horizontal Layout)
   },
-  disableRipple: false // true, false
+  disableRipple: false, // true, false
+  toastPosition: 'top-right' // react-toastify
 }
 
 export default themeConfig

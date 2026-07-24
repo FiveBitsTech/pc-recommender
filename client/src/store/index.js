@@ -5,6 +5,7 @@ import { comparisonApi } from '@/views/comparisons/api/comparisonApi'
 import { historyApi } from '@/views/history/api/historyApi'
 import { builderApi } from '@/views/builder/api/builderApi'
 import { homeApi } from '@/views/home/api/homeApi'
+import { companiesApi } from '@/views/companies/api/companiesApi'
 
 export const store = configureStore({
   reducer: {
@@ -13,6 +14,7 @@ export const store = configureStore({
     [historyApi.reducerPath]: historyApi.reducer,
     [builderApi.reducerPath]: builderApi.reducer,
     [homeApi.reducerPath]: homeApi.reducer,
+    [companiesApi.reducerPath]: companiesApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
@@ -20,5 +22,6 @@ export const store = configureStore({
       .concat(comparisonApi.middleware)
       .concat(historyApi.middleware)
       .concat(builderApi.middleware)
-      .concat(homeApi.middleware),
+      .concat(homeApi.middleware)
+      .concat(companiesApi.middleware),
 })

@@ -9,9 +9,9 @@ export class UpsertCompanyDto {
   @MinLength(2)
   name!: string
 
-  @IsOptional()
   @IsString()
-  website?: string
+  @MinLength(8)
+  website!: string
 
   @IsOptional()
   @IsString()
@@ -39,7 +39,8 @@ export class UpdateCompanyDto {
 
   @IsOptional()
   @IsString()
-  website?: string | null
+  @MinLength(8)
+  website?: string
 
   @IsOptional()
   @IsString()

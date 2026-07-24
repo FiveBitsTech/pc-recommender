@@ -16,6 +16,8 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
+    "prisma:pull": "node scripts/prisma-pull-safe.js",
+    "prisma:repair-db": "node scripts/prisma-repair-db.js",
     "db:seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
