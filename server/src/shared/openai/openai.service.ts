@@ -28,12 +28,13 @@ export type AIRecommendation = {
 
 @Injectable()
 export class OpenAIService {
-  private readonly client: OpenAI
+  private readonly client: OpenAI | null
 
   constructor(private readonly configService: ConfigService) {
-    this.client = new OpenAI({
-      apiKey: this.configService.get<string>('OPENAI_API_KEY'),
-    })
+    const apiKey = this.configService.get<string>('OPENAI_API_KEY')?.trim()
+    this.client = apiKey
+      ? new OpenAI({ apiKey })
+      : null
   }
 
   async generateRecommendations(params: {
@@ -44,6 +45,11 @@ export class OpenAIService {
     products: ProductForAI[]
   }): Promise<AIRecommendation[]> {
     const { usageType, budget, priority, deviceType, products } = params
+
+    if (!this.client) {
+      console.warn('OPENAI_API_KEY no configurada: recomendaciones IA omitidas')
+      return []
+    }
 
     if (products.length === 0) return []
 

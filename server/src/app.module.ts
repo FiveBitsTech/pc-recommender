@@ -16,12 +16,8 @@ import { PrismaModule } from './shared/prisma/prisma.module'
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: [
-        // `.env.${process.env.NODE_ENV ?? 'development'}.local`,
-        // `.env.${process.env.NODE_ENV ?? 'development'}`,
-        // '.env.local',
-        '.env',
-      ],
+      // Solo .env: evita conflictos con .env.development / .env.local entre devs
+      envFilePath: ['.env'],
     }),
     PrismaModule,
     OpenAIModule,

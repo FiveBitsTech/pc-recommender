@@ -35,12 +35,10 @@ lerna-debug.log*
 !.vscode/launch.json
 !.vscode/extensions.json
 
-# dotenv (mantener .env.example / .env.development / .env.production)
+# dotenv — solo `.env` (local) + `.env.example` (plantilla en git)
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+!.env.example
 
 # temp directory
 .temp
