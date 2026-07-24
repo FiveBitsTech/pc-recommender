@@ -59,10 +59,22 @@ const VerticalMenu = ({ scrollMenu }) => {
           Home
         </MenuItem>
         <MenuItem href='/requirements' icon={<i className='ri-robot-2-line' />}>
-          Asesor IA
+          Nueva cotización
         </MenuItem>
-        <MenuItem href='/about' icon={<i className='ri-information-line' />}>
-          About
+        <MenuItem href='/history' icon={<i className='ri-history-line' />}>
+          Mis cotizaciones
+        </MenuItem>
+        <MenuItem href='/comparisons' icon={<i className='ri-scales-3-line' />}>
+          Comparaciones
+        </MenuItem>
+        <MenuItem href='/builder' icon={<i className='ri-tools-line' />}>
+          Armador de PC
+        </MenuItem>
+        <MenuItem href='/favorites' icon={<i className='ri-heart-line' />}>
+          Favoritos
+        </MenuItem>
+        <MenuItem href='/settings' icon={<i className='ri-settings-3-line' />}>
+          Configuración
         </MenuItem>
       </Menu>
       {/* <Menu
