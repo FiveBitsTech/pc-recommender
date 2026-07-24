@@ -14,7 +14,7 @@ import TableRow from '@mui/material/TableRow'
 const ResultDetail = ({ recommendation }) => {
   if (!recommendation) return null
 
-  const { product, score, reason, advantages, disadvantages } = recommendation
+  const { product, score, reason, advantages, disadvantages, limitations, upgradeOptions } = recommendation
   const { specs, company } = product
 
   const specRows = specs
@@ -32,62 +32,107 @@ const ResultDetail = ({ recommendation }) => {
     <Card variant='outlined'>
       <CardContent sx={{ p: 3 }}>
         {/* Why section */}
-        <Typography variant='h6' fontWeight={700} gutterBottom>
+        <Typography variant='h5' fontWeight={700} gutterBottom>
           ¿Por qué recomendamos esta opción?
         </Typography>
         {reason && (
-          <Box sx={{ bgcolor: 'action.hover', borderRadius: 2, p: 2, mb: 3 }}>
-            <Typography variant='body2'>{reason}</Typography>
+          <Box sx={{ bgcolor: 'action.hover', borderRadius: 2, p: 2.5, mb: 3 }}>
+            <Typography variant='body1'>{reason}</Typography>
           </Box>
         )}
 
         {/* Advantages & Disadvantages */}
         {(advantages?.length > 0 || disadvantages?.length > 0) && (
-          <Box sx={{ display: 'flex', gap: 3, mb: 3, flexWrap: 'wrap' }}>
-            {advantages?.length > 0 && (
-              <Box sx={{ flex: 1, minWidth: 200 }}>
-                <Typography variant='subtitle2' fontWeight={600} color='success.main' gutterBottom>
-                  Ventajas
-                </Typography>
-                {advantages.map((adv, i) => (
-                  <Box key={i} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 0.5 }}>
-                    <i className='ri-add-circle-fill' style={{ color: 'var(--mui-palette-success-main)', marginTop: 2, flexShrink: 0 }} />
-                    <Typography variant='body2'>{adv}</Typography>
-                  </Box>
-                ))}
-              </Box>
-            )}
-            {disadvantages?.length > 0 && (
-              <Box sx={{ flex: 1, minWidth: 200 }}>
-                <Typography variant='subtitle2' fontWeight={600} color='error.main' gutterBottom>
-                  Desventajas
-                </Typography>
-                {disadvantages.map((dis, i) => (
-                  <Box key={i} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 0.5 }}>
-                    <i className='ri-indeterminate-circle-fill' style={{ color: 'var(--mui-palette-error-main)', marginTop: 2, flexShrink: 0 }} />
-                    <Typography variant='body2'>{dis}</Typography>
-                  </Box>
-                ))}
-              </Box>
-            )}
-          </Box>
+          <>
+            <Box sx={{ display: 'flex', gap: 4, mb: 3, flexWrap: 'wrap' }}>
+              {advantages?.length > 0 && (
+                <Box sx={{ flex: 1, minWidth: 220 }}>
+                  <Typography variant='subtitle1' fontWeight={700} color='success.main' gutterBottom>
+                    Ventajas
+                  </Typography>
+                  {advantages.map((adv, i) => (
+                    <Box key={i} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 1 }}>
+                      <i className='ri-add-circle-fill' style={{ color: 'var(--mui-palette-success-main)', marginTop: 3, flexShrink: 0, fontSize: '1.1rem' }} />
+                      <Typography variant='body1'>{adv}</Typography>
+                    </Box>
+                  ))}
+                </Box>
+              )}
+              {disadvantages?.length > 0 && (
+                <Box sx={{ flex: 1, minWidth: 220 }}>
+                  <Typography variant='subtitle1' fontWeight={700} color='error.main' gutterBottom>
+                    Desventajas
+                  </Typography>
+                  {disadvantages.map((dis, i) => (
+                    <Box key={i} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 1 }}>
+                      <i className='ri-indeterminate-circle-fill' style={{ color: 'var(--mui-palette-error-main)', marginTop: 3, flexShrink: 0, fontSize: '1.1rem' }} />
+                      <Typography variant='body1'>{dis}</Typography>
+                    </Box>
+                  ))}
+                </Box>
+              )}
+            </Box>
+            <Divider sx={{ mb: 3 }} />
+          </>
         )}
 
-        <Divider sx={{ mb: 3 }} />
+        {/* Limitations */}
+        {limitations?.length > 0 && (
+          <>
+            <Typography variant='subtitle1' fontWeight={700} gutterBottom>
+              <i className='ri-error-warning-line' style={{ marginRight: 6, color: 'var(--mui-palette-warning-main)' }} />
+              Limitaciones técnicas
+            </Typography>
+            <Typography variant='body2' color='text.secondary' sx={{ mb: 1.5 }}>
+              Restricciones a tener en cuenta para el futuro
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 3 }}>
+              {limitations.map((lim, i) => (
+                <Box key={i} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                  <i className='ri-alert-fill' style={{ color: 'var(--mui-palette-warning-main)', marginTop: 3, flexShrink: 0, fontSize: '1.1rem' }} />
+                  <Typography variant='body1'>{lim}</Typography>
+                </Box>
+              ))}
+            </Box>
+            <Divider sx={{ mb: 3 }} />
+          </>
+        )}
+
+        {/* Upgrade Options */}
+        {upgradeOptions?.length > 0 && (
+          <>
+            <Typography variant='subtitle1' fontWeight={700} gutterBottom>
+              <i className='ri-arrow-up-circle-line' style={{ marginRight: 6, color: 'var(--mui-palette-info-main)' }} />
+              Mejoras futuras posibles
+            </Typography>
+            <Typography variant='body2' color='text.secondary' sx={{ mb: 1.5 }}>
+              Componentes que puedes actualizar posteriormente
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 3 }}>
+              {upgradeOptions.map((upg, i) => (
+                <Box key={i} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                  <i className='ri-add-line' style={{ color: 'var(--mui-palette-info-main)', marginTop: 3, flexShrink: 0, fontSize: '1.1rem' }} />
+                  <Typography variant='body1'>{upg}</Typography>
+                </Box>
+              ))}
+            </Box>
+            <Divider sx={{ mb: 3 }} />
+          </>
+        )}
 
         {/* Specs table */}
-        <Typography variant='subtitle2' fontWeight={600} gutterBottom>
+        <Typography variant='subtitle1' fontWeight={700} gutterBottom>
           Especificaciones completas
         </Typography>
 
-        <Table size='small' sx={{ mb: 3 }}>
+        <Table size='medium' sx={{ mb: 3 }}>
           <TableBody>
             {specRows.map((row) => (
               <TableRow key={row.label}>
-                <TableCell sx={{ fontWeight: 600, width: 160, borderBottom: '1px solid', borderColor: 'divider' }}>
+                <TableCell sx={{ fontWeight: 600, width: 180, fontSize: '0.95rem', borderBottom: '1px solid', borderColor: 'divider' }}>
                   {row.label}
                 </TableCell>
-                <TableCell sx={{ borderBottom: '1px solid', borderColor: 'divider' }}>
+                <TableCell sx={{ fontSize: '0.95rem', borderBottom: '1px solid', borderColor: 'divider' }}>
                   {row.value}
                 </TableCell>
               </TableRow>
@@ -102,6 +147,7 @@ const ResultDetail = ({ recommendation }) => {
           {product.productUrl && (
             <Button
               variant='contained'
+              size='large'
               href={product.productUrl}
               target='_blank'
               startIcon={<i className='ri-external-link-line' />}
@@ -109,10 +155,10 @@ const ResultDetail = ({ recommendation }) => {
               Ver en la tienda
             </Button>
           )}
-          <Button variant='outlined' startIcon={<i className='ri-scales-3-line' />}>
+          <Button variant='outlined' size='large' startIcon={<i className='ri-scales-3-line' />}>
             Agregar a comparar
           </Button>
-          <Button variant='outlined' startIcon={<i className='ri-bookmark-line' />}>
+          <Button variant='outlined' size='large' startIcon={<i className='ri-bookmark-line' />}>
             Guardar para después
           </Button>
         </Box>

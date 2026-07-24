@@ -10,6 +10,7 @@ type Input = {
   budget: number
   priority: string
   deviceType: string
+  brandPreference?: string | null
 }
 
 @Injectable()

@@ -41,6 +41,12 @@ export const PRIORITY_OPTIONS = [
   { value: 'upgradeable', label: 'Posibilidad de actualizar', icon: 'ri-arrow-up-circle-line' },
 ]
 
+export const BRAND_PREFERENCE_OPTIONS = [
+  { value: null, label: 'Sin preferencia', icon: 'ri-equalizer-line', description: 'Recomiéndame lo mejor sin importar marca' },
+  { value: 'Intel', label: 'Team Intel', icon: 'ri-cpu-line', description: 'Prefiero procesadores Intel' },
+  { value: 'AMD', label: 'Team AMD', icon: 'ri-cpu-fill', description: 'Prefiero procesadores AMD / Ryzen' },
+]
+
 export const STEPPER_LABELS = [
   { label: '¿Qué buscas?', icon: 'ri-search-line' },
   { label: '¿Para qué la usarás?', icon: 'ri-question-line' },

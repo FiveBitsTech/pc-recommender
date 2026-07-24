@@ -14,6 +14,14 @@ export class PrismaRequirementRepository implements RequirementRepository {
     return this.prisma.userRequirement.findMany({ orderBy: { createdAt: 'desc' } })
   }
 
+  findRecent(limit: number): Promise<RequirementRecord[]> {
+    return this.prisma.userRequirement.findMany({
+      where: { recommendations: { some: {} } },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    })
+  }
+
   findById(id: number): Promise<RequirementRecord | null> {
     return this.prisma.userRequirement.findUnique({ where: { id } })
   }
@@ -25,6 +33,7 @@ export class PrismaRequirementRepository implements RequirementRepository {
         budget: input.budget,
         priority: input.priority,
         deviceType: input.deviceType,
+        brandPreference: input.brandPreference ?? null,
       },
     })
   }

@@ -39,7 +39,7 @@ const ResultCard = ({ recommendation, index, isSelected, onSelect }) => {
           top: 12,
           left: 12,
           fontWeight: 600,
-          fontSize: '0.7rem',
+          fontSize: '0.8rem',
         }}
       />
 
@@ -49,7 +49,7 @@ const ResultCard = ({ recommendation, index, isSelected, onSelect }) => {
           <Box
             sx={{
               width: '100%',
-              height: 120,
+              height: 130,
               bgcolor: 'action.hover',
               borderRadius: 2,
               display: 'flex',
@@ -58,55 +58,66 @@ const ResultCard = ({ recommendation, index, isSelected, onSelect }) => {
               mb: 2,
             }}
           >
-            <i className={product.category === 'laptop' ? 'ri-macbook-line' : 'ri-computer-line'} style={{ fontSize: '3rem', opacity: 0.4 }} />
+            <i className={product.category === 'laptop' ? 'ri-macbook-line' : 'ri-computer-line'} style={{ fontSize: '3.5rem', opacity: 0.4 }} />
           </Box>
 
           {/* Product name */}
-          <Typography variant='subtitle2' fontWeight={700} noWrap>
+          <Typography variant='subtitle1' fontWeight={700} sx={{ lineHeight: 1.3 }}>
             {product.name}
           </Typography>
 
           {/* Price */}
-          <Typography variant='h6' color='primary.main' fontWeight={700} sx={{ mt: 0.5 }}>
+          <Typography variant='h5' color='primary.main' fontWeight={700} sx={{ mt: 0.5 }}>
             S/ {product.price?.toLocaleString('es-PE') || '---'}
           </Typography>
+
+          {/* Price verdict badge */}
+          {recommendation.priceVerdict && (
+            <Chip
+              label={recommendation.priceVerdict}
+              size='small'
+              color={recommendation.overpriced ? 'error' : 'success'}
+              variant='outlined'
+              sx={{ mt: 0.5, fontSize: '0.7rem' }}
+            />
+          )}
 
           {/* Store + stock */}
           {product.company && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 1 }}>
-              <i className='ri-store-2-line' style={{ fontSize: '0.875rem' }} />
-              <Typography variant='caption' color='text.secondary'>
+              <i className='ri-store-2-line' style={{ fontSize: '1rem' }} />
+              <Typography variant='body2' color='text.secondary'>
                 {product.company.name}
               </Typography>
-              <Chip label='En stock' size='small' color='success' variant='outlined' sx={{ ml: 'auto', height: 20, fontSize: '0.65rem' }} />
+              <Chip label='En stock' size='small' color='success' variant='outlined' sx={{ ml: 'auto', height: 22, fontSize: '0.75rem' }} />
             </Box>
           )}
 
           {/* Key specs */}
           {product.specs && (
-            <Box sx={{ mt: 1.5, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+            <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
               {product.specs.processor && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <i className='ri-cpu-line' style={{ fontSize: '0.8rem', opacity: 0.6 }} />
-                  <Typography variant='caption'>{product.specs.processor}</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                  <i className='ri-cpu-line' style={{ fontSize: '1rem', opacity: 0.6 }} />
+                  <Typography variant='body2'>{product.specs.processor}</Typography>
                 </Box>
               )}
               {product.specs.ram && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <i className='ri-ram-line' style={{ fontSize: '0.8rem', opacity: 0.6 }} />
-                  <Typography variant='caption'>{product.specs.ram}</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                  <i className='ri-ram-line' style={{ fontSize: '1rem', opacity: 0.6 }} />
+                  <Typography variant='body2'>{product.specs.ram}</Typography>
                 </Box>
               )}
               {product.specs.storage && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <i className='ri-hard-drive-3-line' style={{ fontSize: '0.8rem', opacity: 0.6 }} />
-                  <Typography variant='caption'>{product.specs.storage}</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                  <i className='ri-hard-drive-3-line' style={{ fontSize: '1rem', opacity: 0.6 }} />
+                  <Typography variant='body2'>{product.specs.storage}</Typography>
                 </Box>
               )}
               {product.specs.screen && product.specs.screen !== 'N/A' && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <i className='ri-monitor-line' style={{ fontSize: '0.8rem', opacity: 0.6 }} />
-                  <Typography variant='caption'>{product.specs.screen}</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                  <i className='ri-monitor-line' style={{ fontSize: '1rem', opacity: 0.6 }} />
+                  <Typography variant='body2'>{product.specs.screen}</Typography>
                 </Box>
               )}
             </Box>
@@ -114,7 +125,7 @@ const ResultCard = ({ recommendation, index, isSelected, onSelect }) => {
 
           {/* AI Reason */}
           {reason && (
-            <Typography variant='caption' color='text.secondary' sx={{ mt: 1.5, display: 'block', fontStyle: 'italic', lineHeight: 1.4 }}>
+            <Typography variant='body2' color='text.secondary' sx={{ mt: 2, display: 'block', fontStyle: 'italic', lineHeight: 1.5 }}>
               💡 {reason}
             </Typography>
           )}
@@ -122,11 +133,11 @@ const ResultCard = ({ recommendation, index, isSelected, onSelect }) => {
       </CardActionArea>
 
       {/* View details button */}
-      <Box sx={{ px: 2.5, pb: 2 }}>
+      <Box sx={{ px: 2.5, pb: 2.5 }}>
         <Button
           fullWidth
           variant={isSelected ? 'contained' : 'outlined'}
-          size='small'
+          size='medium'
           onClick={() => onSelect(recommendation)}
         >
           Ver detalles

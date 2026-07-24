@@ -1,4 +1,4 @@
-import { IsNumber, IsString, Min } from 'class-validator'
+import { IsNumber, IsOptional, IsString, Min } from 'class-validator'
 
 export class CreateRequirementDto {
   @IsString()
@@ -13,4 +13,8 @@ export class CreateRequirementDto {
 
   @IsString()
   deviceType!: string
+
+  @IsOptional()
+  @IsString()
+  brandPreference?: string
 }

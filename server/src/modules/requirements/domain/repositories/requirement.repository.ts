@@ -6,6 +6,7 @@ export type RequirementRecord = {
   budget: { toString(): string }
   priority: string
   deviceType: string
+  brandPreference: string | null
   createdAt: Date
 }
 
@@ -14,10 +15,12 @@ export type CreateRequirementInput = {
   budget: number
   priority: string
   deviceType: string
+  brandPreference?: string | null
 }
 
 export interface RequirementRepository {
   findAll(): Promise<RequirementRecord[]>
   findById(id: number): Promise<RequirementRecord | null>
+  findRecent(limit: number): Promise<RequirementRecord[]>
   create(input: CreateRequirementInput): Promise<RequirementRecord>
 }
