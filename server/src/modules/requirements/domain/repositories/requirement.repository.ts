@@ -21,5 +21,6 @@ export type CreateRequirementInput = {
 export interface RequirementRepository {
   findAll(): Promise<RequirementRecord[]>
   findById(id: number): Promise<RequirementRecord | null>
+  findRecent(limit: number): Promise<RequirementRecord[]>
   create(input: CreateRequirementInput): Promise<RequirementRecord>
 }

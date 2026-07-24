@@ -14,6 +14,14 @@ export class PrismaRequirementRepository implements RequirementRepository {
     return this.prisma.userRequirement.findMany({ orderBy: { createdAt: 'desc' } })
   }
 
+  findRecent(limit: number): Promise<RequirementRecord[]> {
+    return this.prisma.userRequirement.findMany({
+      where: { recommendations: { some: {} } },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    })
+  }
+
   findById(id: number): Promise<RequirementRecord | null> {
     return this.prisma.userRequirement.findUnique({ where: { id } })
   }
