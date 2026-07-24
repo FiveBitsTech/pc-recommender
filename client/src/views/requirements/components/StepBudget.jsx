@@ -10,9 +10,10 @@ import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
 import CardActionArea from '@mui/material/CardActionArea'
 import CardContent from '@mui/material/CardContent'
+import Divider from '@mui/material/Divider'
 import { alpha } from '@mui/material/styles'
 
-import { PRIORITY_OPTIONS } from '../utils/chatSteps'
+import { PRIORITY_OPTIONS, BRAND_PREFERENCE_OPTIONS } from '../utils/chatSteps'
 
 const StepBudget = ({ formData, onChange, onSubmit, onPrev, isSubmitting }) => {
   const handleBudgetChange = (e) => {
@@ -83,6 +84,48 @@ const StepBudget = ({ formData, onChange, onSubmit, onPrev, isSubmitting }) => {
                   <Typography variant='body2' fontWeight={isSelected ? 600 : 400}>
                     {option.label}
                   </Typography>
+                </CardContent>
+              </CardActionArea>
+            </Card>
+          )
+        })}
+      </Box>
+
+      <Divider sx={{ mb: 3 }} />
+
+      {/* Brand preference — optional */}
+      <Typography variant='subtitle1' fontWeight={600} gutterBottom>
+        ¿Tienes preferencia de procesador?
+      </Typography>
+      <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
+        Opcional — si ya sabes qué marca prefieres
+      </Typography>
+
+      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 1.5, mb: 4 }}>
+        {BRAND_PREFERENCE_OPTIONS.map((option) => {
+          const isSelected = formData.brandPreference === option.value
+
+          return (
+            <Card
+              key={option.label}
+              variant='outlined'
+              sx={{
+                borderColor: isSelected ? 'primary.main' : 'divider',
+                borderWidth: isSelected ? 2 : 1,
+                bgcolor: isSelected ? (theme) => alpha(theme.palette.primary.main, 0.04) : 'background.paper',
+              }}
+            >
+              <CardActionArea onClick={() => onChange('brandPreference', option.value)}>
+                <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5, py: 2, textAlign: 'center' }}>
+                  <i className={option.icon} style={{ fontSize: '1.5rem' }} />
+                  <Typography variant='body2' fontWeight={isSelected ? 700 : 500}>
+                    {option.label}
+                  </Typography>
+                  {option.description && (
+                    <Typography variant='caption' color='text.secondary' sx={{ lineHeight: 1.3 }}>
+                      {option.description}
+                    </Typography>
+                  )}
                 </CardContent>
               </CardActionArea>
             </Card>

@@ -32,6 +32,14 @@ export type RecommendationRecord = {
   createdAt: Date
 }
 
+export type CreateRecommendationInput = {
+  requirementId: number
+  productId: number
+  score: number
+  reason: string | null
+}
+
 export interface RecommendationRepository {
   findByRequirementId(requirementId: number): Promise<RecommendationRecord[]>
+  createMany(data: CreateRecommendationInput[]): Promise<void>
 }

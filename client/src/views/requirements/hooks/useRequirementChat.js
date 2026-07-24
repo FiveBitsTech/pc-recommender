@@ -24,6 +24,7 @@ const useRequirementChat = () => {
     budget: 3000,
     budgetFlexible: false,
     priority: null,
+    brandPreference: null,
   })
 
   const [isCompleted, setIsCompleted] = useState(false)
@@ -61,6 +62,7 @@ const useRequirementChat = () => {
         budget: formData.budget,
         priority: formData.priority || 'rendimiento',
         deviceType: formData.deviceType,
+        brandPreference: formData.brandPreference || undefined,
       }).unwrap()
 
       // Simulate analysis time for UX
@@ -87,6 +89,7 @@ const useRequirementChat = () => {
       budget: 3000,
       budgetFlexible: false,
       priority: null,
+      brandPreference: null,
     })
 
     setIsCompleted(false)

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from '../../../../shared/prisma/prisma.service'
 import {
+  CreateRecommendationInput,
   RecommendationRecord,
   RecommendationRepository,
 } from '../../domain/repositories/recommendation.repository'
@@ -57,5 +58,16 @@ export class PrismaRecommendationRepository implements RecommendationRepository 
         price: r.product.prices[0] ? Number(r.product.prices[0].price) : null,
       },
     }))
+  }
+
+  async createMany(data: CreateRecommendationInput[]): Promise<void> {
+    await this.prisma.recommendation.createMany({
+      data: data.map((d) => ({
+        requirementId: d.requirementId,
+        productId: d.productId,
+        score: d.score,
+        reason: d.reason,
+      })),
+    })
   }
 }
