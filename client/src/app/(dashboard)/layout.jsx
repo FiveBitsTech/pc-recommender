@@ -17,18 +17,25 @@ import Customizer from '@core/components/customizer'
 import ScrollToTop from '@core/components/scroll-to-top'
 
 // Util Imports
-import { getMode, getSystemMode } from '@core/utils/serverHelpers'
+import { getAuthRoleFromCookie, getThemeCookieState } from '@core/utils/serverHelpers'
 
 const Layout = async props => {
   const { children } = props
 
-  // Vars
   const direction = 'ltr'
-  const mode = await getMode()
-  const systemMode = await getSystemMode()
+  const [{ mode, settingsCookie, systemMode }, authRole] = await Promise.all([
+    getThemeCookieState(),
+    getAuthRoleFromCookie()
+  ])
 
   return (
-    <Providers direction={direction}>
+    <Providers
+      direction={direction}
+      mode={mode}
+      settingsCookie={settingsCookie}
+      systemMode={systemMode}
+      initialIsAdmin={authRole === 'ADMIN'}
+    >
       <LayoutWrapper
         systemMode={systemMode}
         verticalLayout={

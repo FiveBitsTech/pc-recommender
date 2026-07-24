@@ -1,20 +1,17 @@
-import { IsBoolean, IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator'
+import { IsBoolean, IsInt, IsOptional, IsString, Min, ValidateIf } from 'class-validator'
 import { Type } from 'class-transformer'
 
-const SOURCES = [
-  'fixture',
-  'memory-kings',
-  'live',
-  'cyccomputer',
-  'impacto',
-  'deltron',
-] as const
-
 export class RunScrapingDto {
+  @ValidateIf((o) => o.companyId == null)
   @IsOptional()
   @IsString()
-  @IsIn([...SOURCES])
   source?: string
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  companyId?: number
 
   @IsOptional()
   @IsBoolean()
@@ -23,13 +20,11 @@ export class RunScrapingDto {
 
 export class PreviewScrapingDto {
   @IsString()
-  @IsIn([...SOURCES])
   source!: string
 
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  @Max(20)
   limit?: number
 }

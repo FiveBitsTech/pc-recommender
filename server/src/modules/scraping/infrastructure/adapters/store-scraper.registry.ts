@@ -31,4 +31,13 @@ export class StoreScraperRegistry {
   listSources(): string[] {
     return ['fixture', 'memory-kings', 'cyccomputer', 'impacto', 'deltron']
   }
+
+  hasSource(source: string): boolean {
+    try {
+      this.resolve(source)
+      return true
+    } catch {
+      return false
+    }
+  }
 }

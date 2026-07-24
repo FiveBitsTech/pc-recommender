@@ -13,6 +13,8 @@ const companySelect = {
   name: true,
   website: true,
   logoUrl: true,
+  logoDarkBg: true,
+  logoBgColor: true,
   active: true,
   scrapeConfig: true,
 } as const
@@ -56,6 +58,8 @@ export class PrismaCompanyRepository implements CompanyRepository {
         name: input.name,
         website: input.website ?? null,
         logoUrl: input.logoUrl ?? null,
+        logoDarkBg: input.logoDarkBg ?? false,
+        logoBgColor: input.logoBgColor ?? null,
         active: input.active ?? true,
         scrapeConfig: scrapeConfig ?? Prisma.JsonNull,
       },
@@ -63,6 +67,8 @@ export class PrismaCompanyRepository implements CompanyRepository {
         name: input.name,
         website: input.website ?? null,
         logoUrl: input.logoUrl ?? null,
+        logoDarkBg: input.logoDarkBg ?? false,
+        logoBgColor: input.logoBgColor ?? null,
         active: input.active ?? true,
         ...(scrapeConfig !== undefined ? { scrapeConfig } : {}),
       },
@@ -81,6 +87,8 @@ export class PrismaCompanyRepository implements CompanyRepository {
         ...(input.name !== undefined ? { name: input.name } : {}),
         ...(input.website !== undefined ? { website: input.website } : {}),
         ...(input.logoUrl !== undefined ? { logoUrl: input.logoUrl } : {}),
+        ...(input.logoDarkBg !== undefined ? { logoDarkBg: input.logoDarkBg } : {}),
+        ...(input.logoBgColor !== undefined ? { logoBgColor: input.logoBgColor } : {}),
         ...(input.active !== undefined ? { active: input.active } : {}),
         ...(input.scrapeConfig !== undefined
           ? { scrapeConfig: input.scrapeConfig as Prisma.InputJsonValue }

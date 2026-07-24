@@ -1,7 +1,7 @@
 'use client'
 
 // React Imports
-import { useEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 
 // Third-party Imports
 import classnames from 'classnames'
@@ -92,7 +92,7 @@ const VerticalNav = props => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [width, collapsedWidth, scrollWithContent, breakpointReached, updateVerticalNavState])
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (defaultCollapsed) {
       updateVerticalNavState({
         isCollapsed: defaultCollapsed,
@@ -138,6 +138,9 @@ const VerticalNav = props => {
     }
   }
 
+  // Primer paint: si la cookie pide colapsado, aplicar clase aunque el context aún no haya corrido effects
+  const isCollapsedPaint = Boolean(isCollapsedContext ?? defaultCollapsed)
+
   return (
     <StyledVerticalNav
       width={defaultCollapsed && !widthContext ? collapsedWidth : width}
@@ -151,7 +154,7 @@ const VerticalNav = props => {
       className={classnames(
         verticalNavClasses.root,
         {
-          [verticalNavClasses.collapsed]: isCollapsedContext,
+          [verticalNavClasses.collapsed]: isCollapsedPaint,
           [verticalNavClasses.toggled]: isToggledContext,
           [verticalNavClasses.hovered]: isHoveredContext,
           [verticalNavClasses.breakpointReached]: isBreakpointReachedContext,

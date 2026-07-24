@@ -30,7 +30,7 @@ export class ScrapingCron {
 
     for (const source of sources) {
       try {
-        await this.runScraping.execute(source)
+        await this.runScraping.execute({ source })
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
         this.logger.error(`Cron scrape failed source=${source}: ${message}`)

@@ -7,6 +7,8 @@ import Drawer from '@mui/material/Drawer'
 import IconButton from '@mui/material/IconButton'
 import Typography from '@mui/material/Typography'
 
+import CompanyLogo from './CompanyLogo'
+
 const Row = ({ label, children }) => (
   <Box className='flex flex-col gap-1'>
     <Typography variant='caption' color='text.secondary'>
@@ -39,14 +41,13 @@ const CompanyDetails = ({ open, company, onClose, onEdit }) => {
 
       <Box className='flex flex-col gap-5 p-5 flex-1 overflow-y-auto'>
         <Box className='flex items-center gap-3'>
-          <div className='flex items-center justify-center rounded bg-actionHover' style={{ width: 48, height: 48 }}>
-            {company.logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={company.logoUrl} alt='' width={36} height={36} style={{ objectFit: 'contain' }} />
-            ) : (
-              <i className='ri-store-2-line text-2xl' />
-            )}
-          </div>
+          <CompanyLogo
+            src={company.logoUrl}
+            alt={company.name}
+            size={48}
+            darkBg={company.logoDarkBg}
+            bgColor={company.logoBgColor}
+          />
           <Box>
             <Typography variant='h6'>{company.name}</Typography>
             <Typography variant='body2' color='text.secondary'>

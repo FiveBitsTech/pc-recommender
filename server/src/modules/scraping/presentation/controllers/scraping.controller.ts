@@ -34,11 +34,6 @@ export class ScrapingController {
     return {
       sources: this.registry.listSources(),
       mode: this.config.get<string>('SCRAPE_MODE') ?? 'fixture',
-      previewStores: [
-        { source: 'cyccomputer', website: 'https://cyccomputer.pe/' },
-        { source: 'impacto', website: 'https://www.impacto.com.pe/' },
-        { source: 'deltron', website: 'https://www.deltron.com.pe/' },
-      ],
     }
   }
 
@@ -53,9 +48,16 @@ export class ScrapingController {
   @Roles(UserRole.ADMIN)
   @Post('run')
   run(@Body() body: RunScrapingDto) {
-    const source =
-      body.source ??
-      (this.config.get<string>('SCRAPE_MODE') === 'live' ? 'memory-kings' : 'fixture')
-    return this.runScrapingUseCase.execute(source, { dryRun: body.dryRun === true })
+    if (!body.companyId && !body.source) {
+      const fallback =
+        this.config.get<string>('SCRAPE_MODE') === 'live' ? 'memory-kings' : 'fixture'
+      return this.runScrapingUseCase.execute({ source: fallback, dryRun: body.dryRun === true })
+    }
+
+    return this.runScrapingUseCase.execute({
+      companyId: body.companyId,
+      source: body.source,
+      dryRun: body.dryRun === true,
+    })
   }
 }

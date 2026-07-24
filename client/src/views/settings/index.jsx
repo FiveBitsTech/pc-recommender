@@ -9,20 +9,20 @@ const SettingsPage = () => {
   return (
     <Box sx={{ p: 3, maxWidth: 900, mx: 'auto' }}>
       <Typography variant='h4' fontWeight={700} gutterBottom>
-        Configuración
+        Preferencias
       </Typography>
       <Typography variant='body1' color='text.secondary' sx={{ mb: 4 }}>
-        Preferencias y ajustes de tu cuenta
+        Ajustes de tu cuenta (notificaciones, perfil y preferencias personales)
       </Typography>
 
       <Card variant='outlined'>
         <CardContent sx={{ textAlign: 'center', py: 6 }}>
-          <i className='ri-settings-3-line' style={{ fontSize: '3rem', opacity: 0.3 }} />
+          <i className='ri-user-settings-line' style={{ fontSize: '3rem', opacity: 0.3 }} />
           <Typography variant='h6' color='text.secondary' sx={{ mt: 2 }}>
             Próximamente
           </Typography>
           <Typography variant='body2' color='text.secondary'>
-            Aquí podrás configurar tus preferencias, notificaciones y perfil
+            Aquí configurarás tu cuenta. El scraping de tiendas está en el panel admin → Scraping.
           </Typography>
         </CardContent>
       </Card>

@@ -5,9 +5,17 @@ import { createContext, useCallback, useMemo, useState } from 'react'
 
 const VerticalNavContext = createContext({})
 
-export const VerticalNavProvider = ({ children }) => {
-  // States
-  const [verticalNavState, setVerticalNavState] = useState()
+export const VerticalNavProvider = ({ children, defaultCollapsed = false }) => {
+  // Semilla desde cookie SSR: evita F5 con sidebar ancho → colapsado (salto post-useEffect)
+  const [verticalNavState, setVerticalNavState] = useState(() =>
+    defaultCollapsed
+      ? {
+          isCollapsed: true,
+          collapsing: false,
+          expanding: false
+        }
+      : undefined
+  )
 
   // Hooks
   const updateVerticalNavState = useCallback(values => {

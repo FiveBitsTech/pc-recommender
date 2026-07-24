@@ -19,6 +19,14 @@ export class UpsertCompanyDto {
 
   @IsOptional()
   @IsBoolean()
+  logoDarkBg?: boolean
+
+  @IsOptional()
+  @IsString()
+  logoBgColor?: string | null
+
+  @IsOptional()
+  @IsBoolean()
   active?: boolean
 
   @IsOptional()
@@ -45,6 +53,14 @@ export class UpdateCompanyDto {
   @IsOptional()
   @IsString()
   logoUrl?: string | null
+
+  @IsOptional()
+  @IsBoolean()
+  logoDarkBg?: boolean
+
+  @IsOptional()
+  @IsString()
+  logoBgColor?: string | null
 
   @IsOptional()
   @IsBoolean()

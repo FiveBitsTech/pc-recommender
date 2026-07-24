@@ -27,6 +27,8 @@ export const useCompaniesClient = ({ skip = false } = {}) => {
   const [form, setForm] = useState(emptyCompanyForm())
   const [formError, setFormError] = useState('')
   const [selected, setSelected] = useState(null)
+  const [busySave, setBusySave] = useState(false)
+  const [busyGenerate, setBusyGenerate] = useState(false)
 
   const items = data?.items ?? []
 
@@ -38,8 +40,8 @@ export const useCompaniesClient = ({ skip = false } = {}) => {
     )
   }, [items, search])
 
-  const saving = upsertState.isLoading || updateState.isLoading
-  const generating = generateState.isLoading
+  const saving = busySave || upsertState.isLoading || updateState.isLoading
+  const generating = busyGenerate || generateState.isLoading
 
   const openCreate = () => {
     setForm(emptyCompanyForm())
@@ -64,6 +66,7 @@ export const useCompaniesClient = ({ skip = false } = {}) => {
   }
 
   const closeForm = () => {
+    if (busySave || busyGenerate) return
     setShowForm(false)
     setFormError('')
   }
@@ -81,6 +84,8 @@ export const useCompaniesClient = ({ skip = false } = {}) => {
   }
 
   const saveCompany = async () => {
+    if (busySave || busyGenerate) return false
+
     setFormError('')
     const parsed = formToPayload(form)
     if (!parsed.ok) {
@@ -101,6 +106,7 @@ export const useCompaniesClient = ({ skip = false } = {}) => {
       return false
     }
 
+    setBusySave(true)
     try {
       if (form.id) {
         await updateCompany({ id: form.id, ...parsed.value }).unwrap()
@@ -109,7 +115,8 @@ export const useCompaniesClient = ({ skip = false } = {}) => {
         await upsertCompany(parsed.value).unwrap()
         notificationSuccesMessage('Empresa creada correctamente')
       }
-      closeForm()
+      setShowForm(false)
+      setFormError('')
       return true
     } catch (err) {
       const msg = Array.isArray(err?.data?.message)
@@ -118,10 +125,14 @@ export const useCompaniesClient = ({ skip = false } = {}) => {
       setFormError(msg)
       notificationErrorMessage(msg)
       return false
+    } finally {
+      setBusySave(false)
     }
   }
 
   const generateConfigWithAi = async () => {
+    if (busySave || busyGenerate) return false
+
     setFormError('')
     const name = form.name?.trim()
     const website = form.website?.trim()
@@ -139,6 +150,7 @@ export const useCompaniesClient = ({ skip = false } = {}) => {
       return false
     }
 
+    setBusyGenerate(true)
     try {
       const result = await generateScrapeConfig({
         name,
@@ -163,6 +175,8 @@ export const useCompaniesClient = ({ skip = false } = {}) => {
       setFormError(msg)
       notificationErrorMessage(msg)
       return false
+    } finally {
+      setBusyGenerate(false)
     }
   }
 

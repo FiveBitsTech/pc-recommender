@@ -11,7 +11,32 @@ const PRODUCT_HREF_HINTS = [
   'computadora',
   'pc-',
   'notebook',
+  'componente',
+  'periferico',
 ]
+
+const LISTING_HREF_HINTS = [
+  'categoria',
+  'category',
+  'categories',
+  'catalogo',
+  'catalogue',
+  'tienda',
+  'shop',
+  'collection',
+  'laptop',
+  'computadora',
+  'notebook',
+  'componente',
+  'periferico',
+  'producto',
+  'products',
+]
+
+const productLimitFromEnv = () =>
+  Number(process.env.SCRAPE_PRODUCT_LIMIT ?? process.env.SCRAPE_PREVIEW_LIMIT ?? 100)
+
+const categoryPagesFromEnv = () => Number(process.env.SCRAPE_CATEGORY_PAGES ?? 12)
 
 @Injectable()
 export class PlaywrightStoreProbe {
@@ -24,35 +49,69 @@ export class PlaywrightStoreProbe {
     baseUrl: string
     limit?: number
   }): Promise<ScrapedBatch> {
-    const limit = input.limit ?? 5
+    const limit = input.limit ?? productLimitFromEnv()
+    const maxCategoryPages = categoryPagesFromEnv()
     const { chromium } = await import('playwright')
     const browser = await chromium.launch({ headless: true })
 
     try {
       const page = await browser.newPage()
-      await page.goto(input.baseUrl, { waitUntil: 'domcontentloaded', timeout: 60000 })
-
-      const hrefs = await page.$$eval('a[href]', (anchors) =>
-        anchors.map((a) => (a as HTMLAnchorElement).href).filter(Boolean),
-      )
-
       const baseHost = new URL(input.baseUrl).host.replace(/^www\./, '')
-      const productUrls = [...new Set(hrefs)]
-        .filter((href) => {
-          try {
-            const u = new URL(href)
-            const host = u.host.replace(/^www\./, '')
-            if (host !== baseHost) return false
-            const path = `${u.pathname}${u.search}`.toLowerCase()
-            return PRODUCT_HREF_HINTS.some((hint) => path.includes(hint))
-          } catch {
-            return false
+      const productUrlSet = new Set<string>()
+      const listingQueue: string[] = [input.baseUrl]
+      const visitedListings = new Set<string>()
+
+      while (listingQueue.length > 0 && productUrlSet.size < limit && visitedListings.size < maxCategoryPages) {
+        const listingUrl = listingQueue.shift()
+        if (!listingUrl || visitedListings.has(listingUrl)) continue
+        visitedListings.add(listingUrl)
+
+        try {
+          await page.goto(listingUrl, { waitUntil: 'domcontentloaded', timeout: 60000 })
+          // Algunas tiendas cargan grid por scroll / lazy
+          await page.evaluate(async () => {
+            for (let i = 0; i < 4; i += 1) {
+              window.scrollBy(0, window.innerHeight)
+              await new Promise(r => setTimeout(r, 350))
+            }
+          }).catch(() => undefined)
+
+          const hrefs = await page.$$eval('a[href]', anchors =>
+            anchors.map(a => (a as HTMLAnchorElement).href).filter(Boolean),
+          )
+
+          for (const href of hrefs) {
+            try {
+              const u = new URL(href)
+              const host = u.host.replace(/^www\./, '')
+              if (host !== baseHost) continue
+              const path = `${u.pathname}${u.search}`.toLowerCase()
+              const clean = `${u.origin}${u.pathname}`.replace(/\/$/, '')
+
+              if (PRODUCT_HREF_HINTS.some(hint => path.includes(hint))) {
+                productUrlSet.add(clean)
+              } else if (
+                LISTING_HREF_HINTS.some(hint => path.includes(hint)) &&
+                listingQueue.length + visitedListings.size < maxCategoryPages * 2
+              ) {
+                if (!visitedListings.has(clean) && !listingQueue.includes(clean)) {
+                  listingQueue.push(clean)
+                }
+              }
+            } catch {
+              // ignore bad URLs
+            }
           }
-        })
-        .slice(0, limit)
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error)
+          this.logger.warn(`Probe listing skip url=${listingUrl}: ${message}`)
+        }
+      }
+
+      const productUrls = [...productUrlSet].slice(0, limit)
 
       this.logger.log(
-        `Probe ${input.source}: found ${productUrls.length} candidate product URLs (limit=${limit})`,
+        `Probe ${input.source}: listings=${visitedListings.size} products=${productUrls.length} (limit=${limit})`,
       )
 
       const products: ScrapedProductItem[] = []
@@ -73,7 +132,7 @@ export class PlaywrightStoreProbe {
             const priceMatch =
               bodyText.match(/(?:S\/\.?|PEN)\s*([0-9]{1,3}(?:[.,][0-9]{3})*(?:[.,][0-9]{2})?)/i) ||
               bodyText.match(/([0-9]{1,3}(?:[.,][0-9]{3})*(?:[.,][0-9]{2})?)\s*(?:soles|pen)/i)
-            return { title, image, priceRaw: priceMatch?.[1] ?? null, bodySnippet: bodyText.slice(0, 400) }
+            return { title, image, priceRaw: priceMatch?.[1] ?? null }
           })
 
           const price = this.parsePrice(extracted.priceRaw)
@@ -96,7 +155,7 @@ export class PlaywrightStoreProbe {
             },
             specs: {},
             tags: [],
-            confidence: price > 0 ? 0.4 : 0.2,
+            confidence: price > 0 ? 0.45 : 0.25,
           })
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error)

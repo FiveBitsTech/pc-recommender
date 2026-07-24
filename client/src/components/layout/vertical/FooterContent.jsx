@@ -6,48 +6,30 @@ import Link from 'next/link'
 // Third-party Imports
 import classnames from 'classnames'
 
-// Hook Imports
-import useVerticalNav from '@menu/hooks/useVerticalNav'
-
 // Util Imports
 import { verticalLayoutClasses } from '@layouts/utils/layoutClasses'
 
 const FooterContent = () => {
-  // Hooks
-  const { isBreakpointReached } = useVerticalNav()
-
   return (
     <div
       className={classnames(verticalLayoutClasses.footerContent, 'flex items-center justify-between flex-wrap gap-4')}
     >
       <p>
-        <span>{`© ${new Date().getFullYear()}, Made with `}</span>
-        <span>{`❤️`}</span>
-        <span>{` by `}</span>
-        <Link href='https://mui.com/store/contributors/themeselection' target='_blank' className='text-primary'>
-          ThemeSelection
+        <span>{`© ${new Date().getFullYear()}, Cotiza - IA `}</span>
+        <span>🚀</span>
+        <span>{` por `}</span>
+        <Link href='/about' className='text-primary'>
+          Equipo #50
         </Link>
       </p>
-      {!isBreakpointReached && (
-        <div className='flex items-center gap-4'>
-          <Link href='https://mui.com/store/license' target='_blank' className='text-primary'>
-            License
-          </Link>
-          <Link href='https://mui.com/store/contributors/themeselection' target='_blank' className='text-primary'>
-            More Themes
-          </Link>
-          <Link
-            href='https://demos.themeselection.com/marketplace/materio-mui-nextjs-admin-template/documentation'
-            target='_blank'
-            className='text-primary'
-          >
-            Documentation
-          </Link>
-          <Link href='https://themeselection.com/support' target='_blank' className='text-primary'>
-            Support
-          </Link>
-        </div>
-      )}
+      <div className='flex items-center gap-4'>
+        <Link href='https://discord.gg/FzcheVnU' target='_blank' rel='noreferrer' className='text-primary'>
+          Discord
+        </Link>
+        <Link href='https://wa.me/51923675790' target='_blank' rel='noreferrer' className='text-primary'>
+          Contacto
+        </Link>
+      </div>
     </div>
   )
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 import { useRouter } from 'next/navigation'
 
@@ -9,27 +9,39 @@ import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import Grid from '@mui/material/Grid'
+import IconButton from '@mui/material/IconButton'
 import InputAdornment from '@mui/material/InputAdornment'
+import TablePagination from '@mui/material/TablePagination'
 import TextField from '@mui/material/TextField'
+import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 
 import { useAuthUser } from '@/hooks/useAuthUser'
 
+import CompanyCard from './components/CompanyCard'
 import CompanyDetails from './components/CompanyDetails'
 import CompanyDrawerForm from './components/CompanyDrawerForm'
 import CompanyEmptyState from './components/CompanyEmptyState'
 import CompanySkeleton from './components/CompanySkeleton'
 import CompanyTable from './components/CompanyTable'
+import { useClientPagination } from './hooks/useClientPagination'
 import { useCompaniesClient } from './hooks/useCompaniesClient'
 
 const CompaniesPage = () => {
   const router = useRouter()
   const { ready, isAdmin } = useAuthUser()
   const client = useCompaniesClient({ skip: !ready || !isAdmin })
+  const pager = useClientPagination(client.items, { defaultPageSize: 10 })
+  const [gridView, setGridView] = useState(false)
 
   useEffect(() => {
     if (ready && !isAdmin) router.replace('/home')
   }, [ready, isAdmin, router])
+
+  useEffect(() => {
+    pager.resetPage()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [client.search])
 
   if (!ready || !isAdmin) return null
 
@@ -47,15 +59,16 @@ const CompaniesPage = () => {
                 Empresas
               </Typography>
               <Typography variant='body2' color='text.secondary'>
-                Tiendas a scrapear y su configuración ({client.total})
+                Tiendas a scrapear y su configuración ({pager.total})
               </Typography>
             </div>
-            <div className='flex flex-col sm:flex-row gap-4 w-full sm:w-auto'>
+            <div className='flex flex-wrap items-center gap-2 w-full sm:w-auto'>
               <TextField
                 size='small'
                 placeholder='Buscar empresa...'
                 value={client.search}
                 onChange={e => client.setSearch(e.target.value)}
+                className='sm:is-[260px] max-sm:flex-1'
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position='start'>
@@ -64,6 +77,15 @@ const CompaniesPage = () => {
                   )
                 }}
               />
+              <Tooltip title={gridView ? 'Vista tabla' : 'Vista grid'} placement='top'>
+                <IconButton
+                  color='primary'
+                  onClick={() => setGridView(v => !v)}
+                  sx={{ border: '1px solid', borderColor: 'primary.main', borderRadius: 1 }}
+                >
+                  <i className={gridView ? 'ri-list-check' : 'ri-layout-grid-line'} />
+                </IconButton>
+              </Tooltip>
               <Button variant='contained' startIcon={<i className='ri-add-line' />} onClick={client.openCreate}>
                 Nueva empresa
               </Button>
@@ -86,8 +108,42 @@ const CompaniesPage = () => {
 
           {client.items.length === 0 ? (
             <CompanyEmptyState onCreate={client.openCreate} hasSearch={Boolean(client.search.trim())} />
+          ) : gridView ? (
+            <>
+              <Grid container spacing={4} sx={{ px: 5, pb: 2 }}>
+                {pager.pagedItems.map(item => (
+                  <Grid item xs={12} sm={6} md={4} key={item.id}>
+                    <CompanyCard item={item} onView={client.openDetails} onEdit={client.openEdit} />
+                  </Grid>
+                ))}
+              </Grid>
+              <TablePagination
+                component='div'
+                className='border-bs'
+                count={pager.total}
+                page={pager.page}
+                rowsPerPage={pager.pageSize}
+                rowsPerPageOptions={pager.pageSizeOptions}
+                onPageChange={pager.handlePageChange}
+                onRowsPerPageChange={pager.handlePageSizeChange}
+                labelRowsPerPage='Por página:'
+              />
+            </>
           ) : (
-            <CompanyTable items={client.items} onView={client.openDetails} onEdit={client.openEdit} />
+            <>
+              <CompanyTable items={pager.pagedItems} onView={client.openDetails} onEdit={client.openEdit} />
+              <TablePagination
+                component='div'
+                className='border-bs'
+                count={pager.total}
+                page={pager.page}
+                rowsPerPage={pager.pageSize}
+                rowsPerPageOptions={pager.pageSizeOptions}
+                onPageChange={pager.handlePageChange}
+                onRowsPerPageChange={pager.handlePageSizeChange}
+                labelRowsPerPage='Por página:'
+              />
+            </>
           )}
         </Card>
       </Grid>

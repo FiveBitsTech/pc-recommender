@@ -1,4 +1,5 @@
 'use client'
+
 import { createContext, useMemo, useState } from 'react'
 
 // Config Imports
@@ -8,38 +9,40 @@ import primaryColorConfig from '@configs/primaryColorConfig'
 // Hook Imports
 import { useObjectCookie } from '@core/hooks/useObjectCookie'
 
-// Initial Settings Context
 export const SettingsContext = createContext(null)
 
-// Settings Provider
+const buildInitialSettings = (modeFromProps) => ({
+  mode: modeFromProps || themeConfig.mode,
+  skin: themeConfig.skin,
+  semiDark: themeConfig.semiDark,
+  layout: themeConfig.layout,
+  navbarContentWidth: themeConfig.navbar.contentWidth,
+  contentWidth: themeConfig.contentWidth,
+  footerContentWidth: themeConfig.footer.contentWidth,
+  primaryColor: primaryColorConfig[0].main
+})
+
+const resolveSettings = (cookieFromServer, modeFromProps) => {
+  const base = buildInitialSettings(modeFromProps)
+
+  if (cookieFromServer && JSON.stringify(cookieFromServer) !== '{}') {
+    return { ...base, ...cookieFromServer }
+  }
+
+  return base
+}
+
 export const SettingsProvider = props => {
-  // Initial Settings
-  const initialSettings = {
-    mode: themeConfig.mode,
-    skin: themeConfig.skin,
-    semiDark: themeConfig.semiDark,
-    layout: themeConfig.layout,
-    navbarContentWidth: themeConfig.navbar.contentWidth,
-    contentWidth: themeConfig.contentWidth,
-    footerContentWidth: themeConfig.footer.contentWidth,
-    primaryColor: primaryColorConfig[0].main
-  }
-
-  const updatedInitialSettings = {
-    ...initialSettings,
-    mode: props.mode || themeConfig.mode
-  }
-
-  // Cookies
-  const [settingsCookie, updateSettingsCookie] = useObjectCookie(
-    themeConfig.settingsCookieName,
-    JSON.stringify(props.settingsCookie) !== '{}' ? props.settingsCookie : updatedInitialSettings
+  // Snapshot del servidor: misma semilla en SSR y primer paint del cliente (anti-hydration mismatch)
+  const serverSnapshot = useMemo(
+    () => resolveSettings(props.settingsCookie, props.mode),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
   )
 
-  // State
-  const [_settingsState, _updateSettingsState] = useState(
-    JSON.stringify(settingsCookie) !== '{}' ? settingsCookie : updatedInitialSettings
-  )
+  const [, updateSettingsCookie] = useObjectCookie(themeConfig.settingsCookieName, serverSnapshot)
+
+  const [_settingsState, _updateSettingsState] = useState(serverSnapshot)
 
   const updateSettings = (settings, options) => {
     const { updateCookie = true } = options || {}
@@ -47,38 +50,24 @@ export const SettingsProvider = props => {
     _updateSettingsState(prev => {
       const newSettings = { ...prev, ...settings }
 
-      // Update cookie if needed
       if (updateCookie) updateSettingsCookie(newSettings)
 
       return newSettings
     })
   }
 
-  /**
-   * Updates the settings for page with the provided settings object.
-   * Updated settings won't be saved to cookie hence will be reverted once navigating away from the page.
-   *
-   * @param settings - The partial settings object containing the properties to update.
-   * @returns A function to reset the page settings.
-   *
-   * @example
-   * useEffect(() => {
-   *     return updatePageSettings({ theme: 'dark' });
-   * }, []);
-   */
   const updatePageSettings = settings => {
     updateSettings(settings, { updateCookie: false })
 
-    // Returns a function to reset the page settings
-    return () => updateSettings(settingsCookie, { updateCookie: false })
+    return () => updateSettings(serverSnapshot, { updateCookie: false })
   }
 
   const resetSettings = () => {
-    updateSettings(initialSettings)
+    updateSettings(buildInitialSettings(props.mode))
   }
 
   const isSettingsChanged = useMemo(
-    () => JSON.stringify(initialSettings) !== JSON.stringify(_settingsState),
+    () => JSON.stringify(buildInitialSettings(props.mode)) !== JSON.stringify(_settingsState),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [_settingsState]
   )

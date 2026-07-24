@@ -10,7 +10,7 @@ import CardContent from '@mui/material/CardContent'
 import Chip from '@mui/material/Chip'
 import Grid from '@mui/material/Grid'
 import Typography from '@mui/material/Typography'
-import CircularProgress from '@mui/material/CircularProgress'
+import Skeleton from '@mui/material/Skeleton'
 
 import { useGetRecentRequirementsQuery } from './api/homeApi'
 
@@ -149,9 +149,13 @@ const HomePage = () => {
         </Box>
 
         {isLoading ? (
-          <Box sx={{ textAlign: 'center', py: 4 }}>
-            <CircularProgress size={32} />
-          </Box>
+          <Grid container spacing={2}>
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Grid item xs={12} sm={6} md={4} key={i}>
+                <Skeleton variant='rounded' animation='wave' height={88} sx={{ borderRadius: 2 }} />
+              </Grid>
+            ))}
+          </Grid>
         ) : recentItems.length === 0 ? (
           <Typography variant='body2' color='text.secondary' textAlign='center' sx={{ py: 4 }}>
             Aún no hay búsquedas. Sé el primero en usar el asesor IA.

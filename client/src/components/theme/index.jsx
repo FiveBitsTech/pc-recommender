@@ -25,6 +25,9 @@ import { useSettings } from '@core/hooks/useSettings'
 // Core Theme Imports
 import defaultCoreTheme from '@core/theme'
 
+// Util Imports
+import { getPreferredContrastText } from '@/utils/getPreferredContrastText'
+
 const CustomThemeProvider = props => {
   // Props
   const { children, direction, systemMode } = props
@@ -49,24 +52,27 @@ const CustomThemeProvider = props => {
 
   // Merge the primary color scheme override with the core theme
   const theme = useMemo(() => {
+    const contrastText = getPreferredContrastText(settings.primaryColor)
+
+    const primaryPalette = {
+      main: settings.primaryColor,
+      light: lighten(settings.primaryColor, 0.2),
+      dark: darken(settings.primaryColor, 0.1),
+      contrastText
+    }
+
     const newTheme = {
+      // Preferir blanco; negro solo si el fondo es muy claro
+      contrastThreshold: 2.2,
       colorSchemes: {
         light: {
           palette: {
-            primary: {
-              main: settings.primaryColor,
-              light: lighten(settings.primaryColor, 0.2),
-              dark: darken(settings.primaryColor, 0.1)
-            }
+            primary: primaryPalette
           }
         },
         dark: {
           palette: {
-            primary: {
-              main: settings.primaryColor,
-              light: lighten(settings.primaryColor, 0.2),
-              dark: darken(settings.primaryColor, 0.1)
-            }
+            primary: primaryPalette
           }
         }
       },

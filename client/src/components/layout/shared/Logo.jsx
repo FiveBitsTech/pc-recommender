@@ -29,7 +29,7 @@ const LogoText = styled.span`
   ${({ isHovered, isCollapsed, isBreakpointReached }) =>
     !isBreakpointReached && isCollapsed && !isHovered
       ? 'opacity: 0; margin-inline-start: 0;'
-      : 'opacity: 1; margin-inline-start: 10px;'}
+      : 'opacity: 1; margin-inline-start: 0;'}
 `
 
 const Logo = ({ color }) => {
@@ -60,7 +60,7 @@ const Logo = ({ color }) => {
 
   return (
     <div className='flex items-center min-bs-[24px]'>
-      <MaterioLogo className='text-[22px] text-primary' />
+      <MaterioLogo className='text-[22px] text-primary relative top-[-2.2px]' />
       <LogoText
         color={color}
         ref={logoTextRef}

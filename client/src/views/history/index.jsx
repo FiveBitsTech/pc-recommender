@@ -1,8 +1,9 @@
 'use client'
 
 import Box from '@mui/material/Box'
+import Skeleton from '@mui/material/Skeleton'
+import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
-import CircularProgress from '@mui/material/CircularProgress'
 
 import HistoryCard from './components/HistoryCard'
 import HistoryDetail from './components/HistoryDetail'
@@ -44,9 +45,11 @@ const HistoryPage = () => {
       </Typography>
 
       {isLoading ? (
-        <Box sx={{ textAlign: 'center', py: 6 }}>
-          <CircularProgress size={40} />
-        </Box>
+        <Stack spacing={2}>
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} variant='rounded' animation='wave' height={88} sx={{ borderRadius: 2 }} />
+          ))}
+        </Stack>
       ) : requirements.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 6 }}>
           <i className='ri-search-line' style={{ fontSize: '3rem', opacity: 0.3 }} />

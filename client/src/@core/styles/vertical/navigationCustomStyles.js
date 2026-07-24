@@ -28,15 +28,12 @@ const navigationCustomStyles = (verticalNavOptions, theme) => {
         duration: transitionDuration,
         easing: 'ease-in-out'
       }),
-      borderColor: 'transparent',
+      borderColor: 'var(--mui-palette-divider)',
       ...(collapsedHovered && {
         boxShadow: 'var(--mui-customShadows-lg)'
       }),
       [`& .${verticalNavClasses.toggled}`]: {
         boxShadow: 'var(--mui-customShadows-lg)'
-      },
-      '[data-skin="bordered"] &': {
-        borderColor: 'var(--mui-palette-divider)'
       }
     },
     [`& .${menuClasses.root}`]: {

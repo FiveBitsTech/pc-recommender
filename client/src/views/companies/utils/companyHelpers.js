@@ -8,12 +8,16 @@ export const slugify = value =>
     .replace(/^-+|-+$/g, '')
     .slice(0, 100)
 
+export const DEFAULT_LOGO_BG_COLOR = '#3a3541'
+
 export const emptyCompanyForm = () => ({
   id: null,
   slug: '',
   name: '',
   website: '',
   logoUrl: '',
+  logoDarkBg: false,
+  logoBgColor: DEFAULT_LOGO_BG_COLOR,
   active: true,
   scrapeConfigText:
     '{\n  "baseUrl": "",\n  "categories": [],\n  "listing": { "productLinkSelector": "" },\n  "product": { "name": "h1", "price": ".price" }\n}'
@@ -25,6 +29,8 @@ export const companyToForm = company => ({
   name: company?.name ?? '',
   website: company?.website ?? '',
   logoUrl: company?.logoUrl ?? '',
+  logoDarkBg: Boolean(company?.logoDarkBg),
+  logoBgColor: company?.logoBgColor || DEFAULT_LOGO_BG_COLOR,
   active: company?.active ?? true,
   scrapeConfigText: company?.scrapeConfig
     ? JSON.stringify(company.scrapeConfig, null, 2)
@@ -54,6 +60,14 @@ export const formToPayload = form => {
     return { ok: false, error: 'El sitio web es obligatorio' }
   }
 
+  const logoDarkBg = Boolean(form.logoDarkBg)
+  const rawColor = String(form.logoBgColor || '').trim()
+  const logoBgColor = logoDarkBg
+    ? /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(rawColor)
+      ? rawColor
+      : DEFAULT_LOGO_BG_COLOR
+    : null
+
   return {
     ok: true,
     value: {
@@ -61,6 +75,8 @@ export const formToPayload = form => {
       name: form.name.trim(),
       website,
       logoUrl: form.logoUrl?.trim() || undefined,
+      logoDarkBg,
+      logoBgColor,
       active: Boolean(form.active),
       scrapeConfig: scrape.value
     }

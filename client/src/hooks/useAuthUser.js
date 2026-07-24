@@ -1,14 +1,22 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { createContext, useContext, useLayoutEffect, useMemo, useState } from 'react'
 
 import { clearAuthSession, getStoredUser } from '@/utils/authSession'
 
-export function useAuthUser() {
+const AuthUserContext = createContext({
+  user: null,
+  ready: false,
+  isAdmin: false,
+  refresh: () => {},
+  logout: () => {}
+})
+
+export function AuthUserProvider({ children, initialIsAdmin = false }) {
   const [user, setUser] = useState(null)
   const [ready, setReady] = useState(false)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setUser(getStoredUser())
     setReady(true)
 
@@ -17,18 +25,24 @@ export function useAuthUser() {
     return () => window.removeEventListener('storage', onStorage)
   }, [])
 
-  const refresh = () => setUser(getStoredUser())
+  const value = useMemo(() => {
+    const resolvedAdmin = ready ? user?.role === 'ADMIN' : initialIsAdmin
 
-  const logout = () => {
-    clearAuthSession()
-    setUser(null)
-  }
+    return {
+      user,
+      ready,
+      isAdmin: Boolean(resolvedAdmin),
+      refresh: () => setUser(getStoredUser()),
+      logout: () => {
+        clearAuthSession()
+        setUser(null)
+      }
+    }
+  }, [user, ready, initialIsAdmin])
 
-  return {
-    user,
-    ready,
-    isAdmin: user?.role === 'ADMIN',
-    refresh,
-    logout
-  }
+  return <AuthUserContext.Provider value={value}>{children}</AuthUserContext.Provider>
+}
+
+export function useAuthUser() {
+  return useContext(AuthUserContext)
 }

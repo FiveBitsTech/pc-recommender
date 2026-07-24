@@ -13,6 +13,9 @@ import { Menu, MenuItem, MenuSection } from '@menu/vertical-menu'
 import useVerticalNav from '@menu/hooks/useVerticalNav'
 import { useAuthUser } from '@/hooks/useAuthUser'
 
+// Data Imports
+import { panelMenuItems, perfilMenuItems } from '@components/layout/shared/appMenuItems'
+
 // Styled Component Imports
 import StyledVerticalNavExpandIcon from '@menu/styles/vertical/StyledVerticalNavExpandIcon'
 
@@ -25,20 +28,6 @@ const RenderExpandIcon = ({ open, transitionDuration }) => (
     <i className='ri-arrow-right-s-line' />
   </StyledVerticalNavExpandIcon>
 )
-
-// Flujo app (user y también admin)
-const perfilMenuItems = [
-  { href: '/home', icon: 'ri-home-smile-line', label: 'Home' },
-  { href: '/requirements', icon: 'ri-robot-2-line', label: 'Nueva cotización' },
-  { href: '/history', icon: 'ri-history-line', label: 'Mis cotizaciones' },
-  { href: '/comparisons', icon: 'ri-scales-3-line', label: 'Comparaciones' },
-  { href: '/builder', icon: 'ri-tools-line', label: 'Armador de PC' },
-  { href: '/favorites', icon: 'ri-heart-line', label: 'Favoritos' },
-  { href: '/settings', icon: 'ri-settings-3-line', label: 'Configuración' }
-]
-
-// Solo admin
-const panelMenuItems = [{ href: '/companies', icon: 'ri-store-2-line', label: 'Empresas' }]
 
 const VerticalMenu = ({ scrollMenu }) => {
   const theme = useTheme()

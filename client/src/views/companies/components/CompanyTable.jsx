@@ -6,6 +6,7 @@ import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 
 import tableStyles from '@core/styles/table.module.css'
+import CompanyLogo from './CompanyLogo'
 
 const CompanyTable = ({ items, onView, onEdit }) => (
   <div className='overflow-x-auto'>
@@ -28,14 +29,13 @@ const CompanyTable = ({ items, onView, onEdit }) => (
             <tr key={item.id}>
               <td>
                 <div className='flex items-center gap-3'>
-                  <div className='flex items-center justify-center rounded bg-actionHover' style={{ width: 36, height: 36 }}>
-                    {item.logoUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={item.logoUrl} alt='' width={28} height={28} style={{ objectFit: 'contain' }} />
-                    ) : (
-                      <i className='ri-store-2-line' />
-                    )}
-                  </div>
+                  <CompanyLogo
+                    src={item.logoUrl}
+                    alt={item.name}
+                    size={36}
+                    darkBg={item.logoDarkBg}
+                    bgColor={item.logoBgColor}
+                  />
                   <Typography color='text.primary' className='font-medium'>
                     {item.name}
                   </Typography>

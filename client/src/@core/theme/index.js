@@ -31,10 +31,10 @@ const theme = (settings, mode, direction) => {
     typography: typography(inter.style.fontFamily),
     customShadows: customShadows(mode),
     mainColorChannels: {
-      light: '46 38 61',
-      dark: '231 227 252',
-      lightShadow: '46 38 61',
-      darkShadow: '19 17 32'
+      light: '39 39 42',
+      dark: '228 228 231',
+      lightShadow: '24 24 27',
+      darkShadow: '0 0 0'
     }
   }
 }

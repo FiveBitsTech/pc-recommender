@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common'
+import { CompaniesModule } from '../companies/companies.module'
 import { IngestScrapedBatchUseCase } from './application/use-cases/ingest-scraped-batch.use-case'
 import { ListScrapingHistoryUseCase } from './application/use-cases/list-scraping-history.use-case'
 import { PreviewScrapingUseCase } from './application/use-cases/preview-scraping.use-case'
@@ -18,6 +19,7 @@ import { PrismaScrapingRepository } from './infrastructure/prisma/prisma-scrapin
 import { ScrapingController } from './presentation/controllers/scraping.controller'
 
 @Module({
+  imports: [CompaniesModule],
   controllers: [ScrapingController],
   providers: [
     ListScrapingHistoryUseCase,
