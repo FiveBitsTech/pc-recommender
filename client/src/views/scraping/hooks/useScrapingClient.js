@@ -8,16 +8,9 @@ import {
 } from '@/components/ToastNotification'
 import { useGetAdminCompaniesQuery } from '@/views/companies/api/companiesApi'
 
-import {
-  useGetScrapingHistoryQuery,
-  useGetScrapingSourcesQuery,
-  useRunScrapingMutation
-} from '../api/scrapingApi'
-
-const KNOWN_ADAPTERS = new Set(['fixture', 'memory-kings', 'cyccomputer', 'impacto', 'deltron'])
+import { useGetScrapingHistoryQuery, useRunScrapingMutation } from '../api/scrapingApi'
 
 export const useScrapingClient = ({ skip = false } = {}) => {
-  const { data: sourcesData, isLoading: loadingSources } = useGetScrapingSourcesQuery(undefined, { skip })
   const { data: historyData, isLoading: loadingHistory, refetch: refetchHistory } = useGetScrapingHistoryQuery(
     undefined,
     { skip }
@@ -28,13 +21,11 @@ export const useScrapingClient = ({ skip = false } = {}) => {
   const [runningCompanyId, setRunningCompanyId] = useState(null)
   const [lastResult, setLastResult] = useState(null)
 
-  const mode = sourcesData?.mode ?? 'fixture'
   const companies = companiesData?.items ?? []
   const history = historyData?.items ?? historyData ?? []
 
   const cards = useMemo(() => {
     return companies.map(company => {
-      const hasAdapter = KNOWN_ADAPTERS.has(String(company.slug || '').toLowerCase())
       const hasScrapeConfig = Boolean(
         company.scrapeConfig && typeof company.scrapeConfig === 'object' && Object.keys(company.scrapeConfig).length
       )
@@ -43,21 +34,19 @@ export const useScrapingClient = ({ skip = false } = {}) => {
         companyId: company.id,
         source: company.slug,
         title: company.name,
-        description: hasAdapter
-          ? 'Tiene scraper dedicado en el servidor.'
-          : hasScrapeConfig
-            ? 'Usará scrapeConfig / website de la empresa.'
-            : 'Necesita website o scrapeConfig para poder scrapear.',
+        description: hasScrapeConfig
+          ? 'Listo para scrapear con scrapeConfig / website.'
+          : company.website
+            ? 'Usará el website de la empresa.'
+            : 'Necesita website o scrapeConfig.',
         icon: 'ri-store-2-line',
         website: company.website || null,
         logoUrl: company.logoUrl || null,
         logoDarkBg: Boolean(company.logoDarkBg),
         logoBgColor: company.logoBgColor || null,
         active: company.active ?? true,
-        hasCompany: true,
-        hasAdapter,
         hasScrapeConfig,
-        canRun: Boolean(company.website || hasScrapeConfig || hasAdapter)
+        canRun: Boolean(company.website || hasScrapeConfig)
       }
     })
   }, [companies])
@@ -70,9 +59,7 @@ export const useScrapingClient = ({ skip = false } = {}) => {
     try {
       const result = await runScraping({ companyId, dryRun: false }).unwrap()
       setLastResult(result)
-      notificationSuccesMessage(
-        `Scraping OK · ${result.productsFound ?? 0} productos (${result.source || companyId})`
-      )
+      notificationSuccesMessage(`Scraping OK · ${result.productsFound ?? 0} productos`)
       refetchHistory()
       return true
     } catch (err) {
@@ -89,8 +76,7 @@ export const useScrapingClient = ({ skip = false } = {}) => {
   return {
     cards,
     history: Array.isArray(history) ? history : [],
-    mode,
-    isLoading: loadingSources || loadingHistory || loadingCompanies,
+    isLoading: loadingHistory || loadingCompanies,
     runningCompanyId,
     isRunning: Boolean(runningCompanyId) || runState.isLoading,
     lastResult,

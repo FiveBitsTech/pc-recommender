@@ -17,7 +17,7 @@ const defaultSuggestions = [
   {
     sectionLabel: 'Admin',
     items: [
-      { label: 'Empresas', href: '/companies', icon: 'ri-building-line' },
+      { label: 'WebApps - Empresas', href: '/companies', icon: 'ri-building-line' },
       { label: 'Scraping', href: '/scraping', icon: 'ri-radar-line' },
       { label: 'Preferencias', href: '/settings', icon: 'ri-settings-4-line' },
       { label: 'Historial', href: '/history', icon: 'ri-history-line' }

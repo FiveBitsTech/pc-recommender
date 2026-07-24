@@ -1,23 +1,19 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common'
-import { ConfigService } from '@nestjs/config'
+import { BadRequestException, Body, Controller, Get, Post, UseGuards } from '@nestjs/common'
 import { UserRole } from '@prisma/client'
 import { JwtAuthGuard } from '../../../auth/presentation/guards/jwt-auth.guard'
 import { Roles } from '../../../../shared/security/roles.decorator'
 import { RolesGuard } from '../../../../shared/security/roles.guard'
 import { ListScrapingHistoryUseCase } from '../../application/use-cases/list-scraping-history.use-case'
-import { PreviewScrapingUseCase } from '../../application/use-cases/preview-scraping.use-case'
+import { ClearScrapingCatalogUseCase } from '../../application/use-cases/clear-scraping-catalog.use-case'
 import { RunScrapingUseCase } from '../../application/use-cases/run-scraping.use-case'
-import { StoreScraperRegistry } from '../../infrastructure/adapters/store-scraper.registry'
-import { PreviewScrapingDto, RunScrapingDto } from '../dto/run-scraping.dto'
+import { ClearScrapingCatalogDto, RunScrapingDto } from '../dto/run-scraping.dto'
 
 @Controller('scraping')
 export class ScrapingController {
   constructor(
     private readonly listScrapingHistoryUseCase: ListScrapingHistoryUseCase,
-    private readonly previewScrapingUseCase: PreviewScrapingUseCase,
     private readonly runScrapingUseCase: RunScrapingUseCase,
-    private readonly registry: StoreScraperRegistry,
-    private readonly config: ConfigService,
+    private readonly clearScrapingCatalogUseCase: ClearScrapingCatalogUseCase,
   ) {}
 
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -29,35 +25,25 @@ export class ScrapingController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
-  @Get('sources')
-  listSources() {
-    return {
-      sources: this.registry.listSources(),
-      mode: this.config.get<string>('SCRAPE_MODE') ?? 'fixture',
-    }
-  }
-
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
-  @Post('preview')
-  preview(@Body() body: PreviewScrapingDto) {
-    return this.previewScrapingUseCase.execute(body.source, body.limit)
-  }
-
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
   @Post('run')
   run(@Body() body: RunScrapingDto) {
-    if (!body.companyId && !body.source) {
-      const fallback =
-        this.config.get<string>('SCRAPE_MODE') === 'live' ? 'memory-kings' : 'fixture'
-      return this.runScrapingUseCase.execute({ source: fallback, dryRun: body.dryRun === true })
+    if (!body.companyId) {
+      throw new BadRequestException('Indica companyId de la empresa a scrapear')
     }
 
     return this.runScrapingUseCase.execute({
       companyId: body.companyId,
-      source: body.source,
       dryRun: body.dryRun === true,
+    })
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Post('clear-catalog')
+  clearCatalog(@Body() body: ClearScrapingCatalogDto) {
+    return this.clearScrapingCatalogUseCase.execute({
+      clearProducts: body.clearProducts,
+      clearHistory: body.clearHistory,
     })
   }
 }

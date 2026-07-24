@@ -33,8 +33,7 @@ const LISTING_HREF_HINTS = [
   'products',
 ]
 
-const productLimitFromEnv = () =>
-  Number(process.env.SCRAPE_PRODUCT_LIMIT ?? process.env.SCRAPE_PREVIEW_LIMIT ?? 100)
+const productLimitFromEnv = () => Number(process.env.SCRAPE_PRODUCT_LIMIT ?? 2000)
 
 const categoryPagesFromEnv = () => Number(process.env.SCRAPE_CATEGORY_PAGES ?? 12)
 

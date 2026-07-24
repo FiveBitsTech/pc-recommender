@@ -14,12 +14,8 @@ export const scrapingApi = createApi({
       return headers
     }
   }),
-  tagTypes: ['ScrapingHistory', 'ScrapingSources'],
+  tagTypes: ['ScrapingHistory'],
   endpoints: builder => ({
-    getScrapingSources: builder.query({
-      query: () => '/scraping/sources',
-      providesTags: ['ScrapingSources']
-    }),
     getScrapingHistory: builder.query({
       query: () => '/scraping/history',
       providesTags: ['ScrapingHistory']
@@ -32,19 +28,19 @@ export const scrapingApi = createApi({
       }),
       invalidatesTags: ['ScrapingHistory']
     }),
-    previewScraping: builder.mutation({
+    clearScrapingCatalog: builder.mutation({
       query: body => ({
-        url: '/scraping/preview',
+        url: '/scraping/clear-catalog',
         method: 'POST',
         body
-      })
+      }),
+      invalidatesTags: ['ScrapingHistory']
     })
   })
 })
 
 export const {
-  useGetScrapingSourcesQuery,
   useGetScrapingHistoryQuery,
   useRunScrapingMutation,
-  usePreviewScrapingMutation
+  useClearScrapingCatalogMutation
 } = scrapingApi

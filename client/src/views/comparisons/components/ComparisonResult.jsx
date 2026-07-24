@@ -41,7 +41,7 @@ const ComparisonResult = ({ result, products }) => {
           </Box>
         )}
 
-        {/* Specs comparison table */}
+        {/* Especificaciones comparación */}
         {specsComparison && specsComparison.length > 0 && (
           <>
             <Divider sx={{ mb: 3 }} />

@@ -183,7 +183,8 @@ export const useCompaniesClient = ({ skip = false } = {}) => {
   return {
     items: filteredItems,
     total: items.length,
-    isLoading: isLoading || isFetching,
+    isLoading,
+    isFetching,
     error: error?.data?.message || error?.error || null,
     search,
     setSearch,

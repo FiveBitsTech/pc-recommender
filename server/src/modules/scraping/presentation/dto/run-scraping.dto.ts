@@ -1,30 +1,23 @@
-import { IsBoolean, IsInt, IsOptional, IsString, Min, ValidateIf } from 'class-validator'
+import { IsBoolean, IsInt, IsOptional, Min } from 'class-validator'
 import { Type } from 'class-transformer'
 
 export class RunScrapingDto {
-  @ValidateIf((o) => o.companyId == null)
-  @IsOptional()
-  @IsString()
-  source?: string
-
-  @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  companyId?: number
+  companyId!: number
 
   @IsOptional()
   @IsBoolean()
   dryRun?: boolean
 }
 
-export class PreviewScrapingDto {
-  @IsString()
-  source!: string
+export class ClearScrapingCatalogDto {
+  @IsOptional()
+  @IsBoolean()
+  clearProducts?: boolean
 
   @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  limit?: number
+  @IsBoolean()
+  clearHistory?: boolean
 }

@@ -15,7 +15,6 @@ import {
   type ScrapingRepository,
 } from '../../domain/repositories/scraping.repository'
 import { PlaywrightStoreProbe } from '../../infrastructure/adapters/playwright-store-probe'
-import { StoreScraperRegistry } from '../../infrastructure/adapters/store-scraper.registry'
 import type { ScrapedBatch } from '../../domain/ports/store-scraper.port'
 import { IngestScrapedBatchUseCase } from './ingest-scraped-batch.use-case'
 
@@ -30,44 +29,26 @@ export class RunScrapingUseCase {
   private readonly logger = new Logger(RunScrapingUseCase.name)
 
   constructor(
-    private readonly registry: StoreScraperRegistry,
     private readonly ingestScrapedBatch: IngestScrapedBatchUseCase,
     private readonly probe: PlaywrightStoreProbe,
     @Inject(SCRAPING_REPOSITORY) private readonly scrapingRepository: ScrapingRepository,
     @Inject(COMPANY_REPOSITORY) private readonly companyRepository: CompanyRepository,
   ) {}
 
-  async execute(input: { source?: string; companyId?: number; dryRun?: boolean }) {
-    if (input.companyId) {
-      return this.executeForCompany(input.companyId, { dryRun: input.dryRun })
+  async execute(input: { companyId: number; dryRun?: boolean }) {
+    if (!input.companyId) {
+      throw new BadRequestException('Indica companyId')
     }
 
-    const source = input.source
-    if (!source) {
-      throw new BadRequestException('Indica companyId o source')
-    }
-
-    return this.executeForSource(source, { dryRun: input.dryRun })
+    return this.executeForCompany(input.companyId, { dryRun: input.dryRun })
   }
 
   private async executeForCompany(companyId: number, options?: { dryRun?: boolean }) {
     const company = await this.companyRepository.findById(companyId)
     if (!company) throw new NotFoundException('Empresa no encontrada')
 
-    if (this.registry.hasSource(company.slug)) {
-      this.logger.log(`Company ${company.slug}: usando adapter dedicado`)
-      return this.executeForSource(company.slug, options)
-    }
-
     const batch = await this.buildBatchFromCompany(company)
     return this.persistOrPreview(batch, options, company.id)
-  }
-
-  private async executeForSource(source: string, options?: { dryRun?: boolean }) {
-    const scraper = this.registry.resolve(source)
-    this.logger.log(`Scraping start source=${scraper.source} dryRun=${Boolean(options?.dryRun)}`)
-    const batch = await scraper.scrape()
-    return this.persistOrPreview(batch, options)
   }
 
   private async buildBatchFromCompany(company: CompanyRecord): Promise<ScrapedBatch> {
@@ -84,7 +65,7 @@ export class RunScrapingUseCase {
       )
     }
 
-    this.logger.log(`Company ${company.slug}: probe genérico url=${baseUrl}`)
+    this.logger.log(`Company ${company.slug}: scrapeConfig url=${baseUrl}`)
 
     return this.probe.probe({
       source: company.slug,
@@ -95,7 +76,7 @@ export class RunScrapingUseCase {
         website: company.website || baseUrl,
       },
       baseUrl,
-      limit: Number(process.env.SCRAPE_PRODUCT_LIMIT ?? process.env.SCRAPE_PREVIEW_LIMIT ?? 100),
+      limit: Number(process.env.SCRAPE_PRODUCT_LIMIT ?? 2000),
     })
   }
 
@@ -124,6 +105,17 @@ export class RunScrapingUseCase {
 
       const result = await this.ingestScrapedBatch.execute(batch)
       companyIdForHistory = result.companyId
+
+      const previous = await this.scrapingRepository.findLatestSuccessBySource(batch.run.source)
+      let yieldWarning: string | null = null
+      if (previous && previous.productsFound > 0) {
+        const ratio = result.productsIngested / previous.productsFound
+        if (ratio < 0.5) {
+          yieldWarning = `Yield drop: ${result.productsIngested} vs previous ${previous.productsFound} (${Math.round(ratio * 100)}%). Possible HTML/selector change.`
+          this.logger.warn(`Scraping ${batch.run.source}: ${yieldWarning}`)
+        }
+      }
+
       const history = await this.scrapingRepository.create({
         companyId: result.companyId,
         source: batch.run.source,
@@ -144,6 +136,7 @@ export class RunScrapingUseCase {
         companyId: result.companyId,
         productsFound: result.productsIngested,
         historyId: history.id,
+        yieldWarning,
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)

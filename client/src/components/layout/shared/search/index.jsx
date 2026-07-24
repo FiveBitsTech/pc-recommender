@@ -184,7 +184,7 @@ const NavSearch = () => {
           <IconButton className='text-textPrimary' onClick={() => setOpen(true)}>
             <i className='ri-search-line text-textPrimary' />
           </IconButton>
-          <div className='whitespace-nowrap select-none text-textDisabled'>Buscar ⌘K</div>
+          <div className='whitespace-nowrap select-none text-textDisabled'>Buscar con ⌘</div>
         </div>
       )}
       <CommandDialog open={open} onOpenChange={setOpen}>

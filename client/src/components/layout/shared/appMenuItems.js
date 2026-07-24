@@ -12,6 +12,7 @@ export const perfilMenuItems = [
 
 /** Solo admin — operaciones de plataforma */
 export const panelMenuItems = [
-  { href: '/companies', icon: 'ri-store-2-line', label: 'Empresas' },
-  { href: '/scraping', icon: 'ri-radar-line', label: 'Scraping' }
+  { href: '/companies', icon: 'ri-store-2-line', label: 'Dominio - Empresas ' },
+  { href: '/scraping', icon: 'ri-radar-line', label: 'Scraping' },
+  { href: '/admin', icon: 'ri-settings-3-line', label: 'Administración' }
 ]

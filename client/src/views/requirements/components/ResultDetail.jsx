@@ -120,7 +120,7 @@ const ResultDetail = ({ recommendation }) => {
           </>
         )}
 
-        {/* Specs table */}
+        {/* Especificaciones completas */}
         <Typography variant='subtitle1' fontWeight={700} gutterBottom>
           Especificaciones completas
         </Typography>

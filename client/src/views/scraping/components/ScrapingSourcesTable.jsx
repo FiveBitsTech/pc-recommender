@@ -70,8 +70,8 @@ const ScrapingSourcesTable = ({ items, runningCompanyId, isRunning, onRun }) => 
                 <Chip
                   size='small'
                   variant='tonal'
-                  color={card.hasScrapeConfig || card.hasAdapter ? 'info' : 'warning'}
-                  label={card.hasAdapter ? 'Adapter' : card.hasScrapeConfig ? 'scrapeConfig' : 'Sin config'}
+                  color={card.hasScrapeConfig ? 'info' : card.website ? 'default' : 'warning'}
+                  label={card.hasScrapeConfig ? 'scrapeConfig' : card.website ? 'Website' : 'Sin config'}
                 />
               </td>
               <td>

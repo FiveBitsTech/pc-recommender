@@ -50,7 +50,7 @@ const data = [
   },
   {
     id: '8',
-    name: 'Empresas',
+    name: 'WebApps - Empresas',
     url: '/companies',
     icon: 'ri-building-line',
     section: 'Admin'

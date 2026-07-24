@@ -46,7 +46,7 @@ const shortcuts = [
   {
     url: '/companies',
     icon: 'ri-building-line',
-    title: 'Empresas',
+    title: 'WebApps',
     subtitle: 'Admin tiendas'
   },
   {

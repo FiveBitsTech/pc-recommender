@@ -11,6 +11,7 @@ import CardContent from '@mui/material/CardContent'
 import Grid from '@mui/material/Grid'
 import IconButton from '@mui/material/IconButton'
 import InputAdornment from '@mui/material/InputAdornment'
+import Skeleton from '@mui/material/Skeleton'
 import TablePagination from '@mui/material/TablePagination'
 import TextField from '@mui/material/TextField'
 import Tooltip from '@mui/material/Tooltip'
@@ -22,15 +23,22 @@ import CompanyCard from './components/CompanyCard'
 import CompanyDetails from './components/CompanyDetails'
 import CompanyDrawerForm from './components/CompanyDrawerForm'
 import CompanyEmptyState from './components/CompanyEmptyState'
-import CompanySkeleton from './components/CompanySkeleton'
 import CompanyTable from './components/CompanyTable'
 import { useClientPagination } from './hooks/useClientPagination'
 import { useCompaniesClient } from './hooks/useCompaniesClient'
 
+const BodyRowsSkeleton = () => (
+  <div className='flex flex-col gap-2 px-6 pb-6'>
+    {Array.from({ length: 5 }).map((_, i) => (
+      <Skeleton key={i} variant='rounded' animation='wave' height={52} />
+    ))}
+  </div>
+)
+
 const CompaniesPage = () => {
   const router = useRouter()
   const { ready, isAdmin } = useAuthUser()
-  const client = useCompaniesClient({ skip: !ready || !isAdmin })
+  const client = useCompaniesClient({ skip: !isAdmin })
   const pager = useClientPagination(client.items, { defaultPageSize: 10 })
   const [gridView, setGridView] = useState(false)
 
@@ -43,11 +51,8 @@ const CompaniesPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [client.search])
 
-  if (!ready || !isAdmin) return null
-
-  if (client.isLoading && client.total === 0) {
-    return <CompanySkeleton />
-  }
+  // Cookie SSR ya da isAdmin; no vaciar la vista con return null / skeleton de página
+  if (ready && !isAdmin) return null
 
   return (
     <Grid container spacing={6}>
@@ -56,10 +61,11 @@ const CompaniesPage = () => {
           <CardContent className='flex justify-between flex-col gap-4 items-start sm:flex-row sm:items-center'>
             <div>
               <Typography variant='h4' className='mbe-1'>
-                Empresas
+                WebApps - Empresas
               </Typography>
               <Typography variant='body2' color='text.secondary'>
-                Tiendas a scrapear y su configuración ({pager.total})
+                Tiendas a scrapear y su configuración
+                {client.isLoading ? '' : ` (${pager.total})`}
               </Typography>
             </div>
             <div className='flex flex-wrap items-center gap-2 w-full sm:w-auto'>
@@ -106,7 +112,9 @@ const CompaniesPage = () => {
             </Alert>
           ) : null}
 
-          {client.items.length === 0 ? (
+          {client.isLoading ? (
+            <BodyRowsSkeleton />
+          ) : client.items.length === 0 ? (
             <CompanyEmptyState onCreate={client.openCreate} hasSearch={Boolean(client.search.trim())} />
           ) : gridView ? (
             <>
