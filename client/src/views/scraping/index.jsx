@@ -45,7 +45,9 @@ const ScrapingPage = () => {
 
   const filteredCards = useMemo(() => {
     const q = search.trim().toLowerCase()
+
     if (!q) return client.cards
+
     return client.cards.filter(card =>
       [card.title, card.source, card.website].filter(Boolean).some(v => String(v).toLowerCase().includes(q))
     )
@@ -74,12 +76,7 @@ const ScrapingPage = () => {
                 Scrapea empresas por website / scrapeConfig
               </Typography>
             </div>
-            <CustomTabList
-              variant='scrollable'
-              pill='true'
-              color='primary'
-              onChange={(_, value) => setTab(value)}
-            >
+            <CustomTabList variant='scrollable' pill='true' color='primary' onChange={(_, value) => setTab(value)}>
               <Tab value='catalog' label='Catálogo' icon={<i className='ri-store-2-line' />} iconPosition='start' />
               <Tab
                 value='config'
@@ -133,13 +130,20 @@ const ScrapingPage = () => {
                   </CardContent>
 
                   {client.lastResult ? (
-                    <Alert
-                      severity={client.lastResult.status === 'success' ? 'success' : 'info'}
-                      sx={{ mx: 5, mb: 3 }}
-                    >
+                    <Alert severity={client.lastResult.status === 'success' ? 'success' : 'info'} sx={{ mx: 5, mb: 3 }}>
                       Última corrida: <strong>{client.lastResult.source}</strong> ·{' '}
                       {client.lastResult.productsFound ?? 0} productos
                       {client.lastResult.persisted ? ' · guardado en BD' : ''}
+                    </Alert>
+                  ) : null}
+
+                  {client.isRunning && client.progress ? (
+                    <Alert severity='info' sx={{ mx: 5, mb: 3 }}>
+                      {client.progress.phase}
+                      {client.progress.total > 0 ? ` · ${client.progress.visited}/${client.progress.total} fichas` : ''}
+                      {client.progress.etaSeconds != null && client.progress.etaSeconds > 0
+                        ? ` · ETA ~${client.progress.etaSeconds}s`
+                        : ''}
                     </Alert>
                   ) : null}
 
@@ -174,6 +178,7 @@ const ScrapingPage = () => {
                               card={card}
                               running={client.runningCompanyId === card.companyId}
                               disabled={client.isRunning && client.runningCompanyId !== card.companyId}
+                              progress={client.runningCompanyId === card.companyId ? client.progress : null}
                               onRun={client.runCompany}
                             />
                           </Grid>
@@ -197,6 +202,7 @@ const ScrapingPage = () => {
                         items={sourcesPager.pagedItems}
                         runningCompanyId={client.runningCompanyId}
                         isRunning={client.isRunning}
+                        progress={client.progress}
                         onRun={client.runCompany}
                       />
                       <TablePagination

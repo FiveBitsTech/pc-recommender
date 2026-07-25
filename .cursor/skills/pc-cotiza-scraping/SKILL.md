@@ -34,6 +34,7 @@ No hay adapters dedicados por tienda ni modo fixture/live en env.
 
 ## Persistencia
 
+- **Ingest incremental**: `Company` se upserta antes del crawl y cada ficha se guarda apenas se scrapea (`onProduct` del probe). Si el run falla a mitad, lo ya guardado queda en BD.
 - Upsert `Company` por `slug`.
 - Upsert `Product` por `(companyId, productUrl)`.
 - Upsert `ProductSpec` 1:1 (proyectar nested → strings).
@@ -45,11 +46,24 @@ No hay adapters dedicados por tienda ni modo fixture/live en env.
 
 `PlaywrightStoreProbe` → `IngestScrapedBatchUseCase` → `RunScrapingUseCase` → cron (todas las empresas activas) + `POST /api/scraping/run` (`companyId` obligatorio).
 
+Progreso: `ScrapingProgressService` (en memoria) expone `GET /api/scraping/progress?companyId=` con `visited/total/persisted/etaSeconds`; el cliente lo pollea cada 1.5s.
+
 Yield: si `productsFound` cae >50% vs última corrida `success` del mismo `source`, el run responde `yieldWarning`.
+
+## scrapeConfig dirige el run
+
+`categories[]` siembra el rastreo y aporta la categoría de cada producto · `listing.productLinkSelector` localiza fichas ·
+`pagination` (`query` / `link`) recorre páginas · `product.*` prioriza selectores de la ficha. Sin categorías usables, cae
+al rastreo heurístico desde `baseUrl`.
+
+Campos derivados en la ficha (`parse-product-fields.ts`): categoría, marca, modelo, SKU, specs, tags y precio.
+Orden de precio: JSON-LD → meta → `itemprop` → selector del config → `data-*` → clases `price` → texto.
 
 ## Env
 
 - `SCRAPE_PRODUCT_LIMIT` (default 2000)
+- `SCRAPE_CATEGORY_PAGES` (default 12, rastreo heurístico)
+- `SCRAPE_MAX_LISTINGS` (default 60, tope con categorías del config)
 - `SCRAPE_REQUEST_DELAY_MS`
 - `SCRAPE_CRON` / `SCRAPE_CRON_ENABLED`
 

@@ -6,6 +6,7 @@ import { ListScrapingHistoryUseCase } from './application/use-cases/list-scrapin
 import { RunScrapingUseCase } from './application/use-cases/run-scraping.use-case'
 import { SCRAPING_REPOSITORY } from './domain/repositories/scraping.repository'
 import { PlaywrightStoreProbe } from './infrastructure/adapters/playwright-store-probe'
+import { ScrapingProgressService } from './infrastructure/scraping-progress.service'
 import { ScrapingCron } from './infrastructure/cron/scraping.cron'
 import { PrismaScrapingRepository } from './infrastructure/prisma/prisma-scraping.repository'
 import { ScrapingController } from './presentation/controllers/scraping.controller'
@@ -19,6 +20,7 @@ import { ScrapingController } from './presentation/controllers/scraping.controll
     ClearScrapingCatalogUseCase,
     RunScrapingUseCase,
     PlaywrightStoreProbe,
+    ScrapingProgressService,
     ScrapingCron,
     { provide: SCRAPING_REPOSITORY, useClass: PrismaScrapingRepository },
   ],

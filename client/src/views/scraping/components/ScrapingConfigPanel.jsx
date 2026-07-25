@@ -18,12 +18,10 @@ import Divider from '@mui/material/Divider'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import Typography from '@mui/material/Typography'
 
-import {
-  notificationErrorMessage,
-  notificationSuccesMessage
-} from '@/components/ToastNotification'
+import { notificationErrorMessage, notificationSuccesMessage } from '@/components/ToastNotification'
 
 import { useClearScrapingCatalogMutation } from '../api/scrapingApi'
+import runButtonSx from './runButtonSx'
 
 const CATALOG_ITEMS = [
   { key: 'products', label: 'Productos', icon: 'ri-box-3-line' },
@@ -50,6 +48,7 @@ const ScrapingConfigPanel = () => {
       const msg = Array.isArray(err?.data?.message)
         ? err.data.message.join(', ')
         : err?.data?.message || err?.error || 'No se pudo limpiar'
+
       notificationErrorMessage(msg)
     }
   }
@@ -67,8 +66,8 @@ const ScrapingConfigPanel = () => {
         </div>
 
         <Alert severity='warning'>
-          Al limpiar catálogo se vacían productos, precios, specs, etiquetas, comparaciones y
-          recomendaciones. Las empresas no se tocan.
+          Al limpiar catálogo se vacían productos, precios, specs, etiquetas, comparaciones y recomendaciones. Las
+          empresas no se tocan.
         </Alert>
 
         <div className='flex flex-col gap-1'>
@@ -165,8 +164,10 @@ const ScrapingConfigPanel = () => {
             color='error'
             variant='contained'
             loading={isLoading}
+            loadingPosition='start'
             startIcon={<i className='ri-delete-bin-line' />}
             onClick={handleClear}
+            sx={runButtonSx}
           >
             Sí, limpiar todo
           </LoadingButton>

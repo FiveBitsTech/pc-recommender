@@ -10,7 +10,9 @@ export const scrapingApi = createApi({
     baseUrl,
     prepareHeaders: headers => {
       const token = getAccessToken()
+
       if (token) headers.set('Authorization', `Bearer ${token}`)
+
       return headers
     }
   }),
@@ -19,6 +21,10 @@ export const scrapingApi = createApi({
     getScrapingHistory: builder.query({
       query: () => '/scraping/history',
       providesTags: ['ScrapingHistory']
+    }),
+    getScrapingProgress: builder.query({
+      query: companyId => `/scraping/progress?companyId=${companyId}`,
+      keepUnusedDataFor: 0
     }),
     runScraping: builder.mutation({
       query: body => ({
@@ -41,6 +47,8 @@ export const scrapingApi = createApi({
 
 export const {
   useGetScrapingHistoryQuery,
+  useGetScrapingProgressQuery,
+  useLazyGetScrapingProgressQuery,
   useRunScrapingMutation,
   useClearScrapingCatalogMutation
 } = scrapingApi

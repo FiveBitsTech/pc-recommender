@@ -7,7 +7,10 @@ import { LoadingButton } from '@mui/lab'
 import tableStyles from '@core/styles/table.module.css'
 import CompanyLogo from '@/views/companies/components/CompanyLogo'
 
-const ScrapingSourcesTable = ({ items, runningCompanyId, isRunning, onRun }) => (
+import ScrapingRunProgress from './ScrapingRunProgress'
+import runButtonSx from './runButtonSx'
+
+const ScrapingSourcesTable = ({ items, runningCompanyId, isRunning, progress, onRun }) => (
   <div className='overflow-x-auto'>
     <table className={tableStyles.table}>
       <thead>
@@ -42,6 +45,7 @@ const ScrapingSourcesTable = ({ items, runningCompanyId, isRunning, onRun }) => 
                     <Typography variant='body2' color='text.secondary'>
                       {card.description}
                     </Typography>
+                    {running && progress ? <ScrapingRunProgress progress={progress} compact /> : null}
                   </div>
                 </div>
               </td>
@@ -88,11 +92,13 @@ const ScrapingSourcesTable = ({ items, runningCompanyId, isRunning, onRun }) => 
                     size='small'
                     variant='contained'
                     loading={running}
+                    loadingPosition='start'
                     disabled={(isRunning && !running) || !card.canRun}
                     startIcon={<i className='ri-play-circle-line' />}
                     onClick={() => onRun(card.companyId)}
+                    sx={runButtonSx}
                   >
-                    {running ? 'Scrapeando...' : 'Ejecutar'}
+                    Ejecutar
                   </LoadingButton>
                 </div>
               </td>

@@ -21,11 +21,13 @@ export const useClientPagination = (items = [], { defaultPageSize = DEFAULT_PAGE
 
   useEffect(() => {
     const maxPage = Math.max(0, Math.ceil(total / pageSize) - 1)
+
     if (page > maxPage) setPage(maxPage)
   }, [page, pageSize, total])
 
   const pagedItems = useMemo(() => {
     const start = page * pageSize
+
     return items.slice(start, start + pageSize)
   }, [items, page, pageSize])
 

@@ -9,7 +9,10 @@ import { LoadingButton } from '@mui/lab'
 
 import CompanyLogo from '@/views/companies/components/CompanyLogo'
 
-const ScrapingSourceCard = ({ card, running, disabled, onRun }) => (
+import ScrapingRunProgress from './ScrapingRunProgress'
+import runButtonSx from './runButtonSx'
+
+const ScrapingSourceCard = ({ card, running, disabled, progress, onRun }) => (
   <Card variant='outlined' sx={{ height: '100%' }}>
     <CardContent className='flex flex-col gap-4' sx={{ height: '100%' }}>
       <Box className='flex items-start justify-between gap-3'>
@@ -43,27 +46,24 @@ const ScrapingSourceCard = ({ card, running, disabled, onRun }) => (
       </Typography>
 
       {card.website ? (
-        <Typography
-          component='a'
-          href={card.website}
-          target='_blank'
-          rel='noreferrer'
-          variant='body2'
-          color='primary'
-        >
+        <Typography component='a' href={card.website} target='_blank' rel='noreferrer' variant='body2' color='primary'>
           {card.website.replace(/^https?:\/\//, '')}
         </Typography>
       ) : null}
+
+      {running && progress ? <ScrapingRunProgress progress={progress} compact /> : null}
 
       <LoadingButton
         variant='contained'
         fullWidth
         loading={running}
+        loadingPosition='start'
         disabled={disabled || !card.canRun}
         startIcon={<i className='ri-play-circle-line' />}
         onClick={() => onRun(card.companyId)}
+        sx={runButtonSx}
       >
-        {running ? 'Scrapeando...' : 'Ejecutar scraping'}
+        Ejecutar scraping
       </LoadingButton>
     </CardContent>
   </Card>

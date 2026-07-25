@@ -7,6 +7,7 @@ import tableStyles from '@core/styles/table.module.css'
 
 const formatDate = value => {
   if (!value) return '—'
+
   try {
     return new Date(value).toLocaleString('es-PE', {
       dateStyle: 'short',

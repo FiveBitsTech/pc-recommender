@@ -56,7 +56,11 @@ Dry-run:
 { "companyId": 1, "dryRun": true }
 ```
 
-Env: `SCRAPE_PRODUCT_LIMIT`, `SCRAPE_REQUEST_DELAY_MS`, `SCRAPE_CRON`, `SCRAPE_CRON_ENABLED`.
+El `scrapeConfig` de la empresa dirige el run: `categories[]` siembra el rastreo (y da la categoría de cada producto),
+`listing.productLinkSelector` localiza las fichas, `pagination` recorre las páginas y `product.*` prioriza los selectores
+de nombre/precio/imagen/specs. Si no hay categorías usables, cae al rastreo heurístico desde `baseUrl`.
+
+Env: `SCRAPE_PRODUCT_LIMIT`, `SCRAPE_REQUEST_DELAY_MS`, `SCRAPE_CATEGORY_PAGES`, `SCRAPE_MAX_LISTINGS`, `SCRAPE_CRON`, `SCRAPE_CRON_ENABLED`.
 
 ## Env
 
