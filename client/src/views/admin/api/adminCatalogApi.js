@@ -2,7 +2,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 
 import { getAccessToken } from '@/utils/authSession'
 
-const baseUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5300'}/api`
+const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5300/api'
 
 export const adminCatalogApi = createApi({
   reducerPath: 'adminCatalogApi',
