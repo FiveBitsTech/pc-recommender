@@ -14,6 +14,13 @@ export class PrismaScrapingRepository implements ScrapingRepository {
     return this.prisma.scrapingHistory.findMany({ orderBy: { executedAt: 'desc' } })
   }
 
+  findLatestSuccessBySource(source: string): Promise<ScrapingHistoryRecord | null> {
+    return this.prisma.scrapingHistory.findFirst({
+      where: { source, status: 'success' },
+      orderBy: { executedAt: 'desc' },
+    })
+  }
+
   create(input: CreateScrapingHistoryInput): Promise<ScrapingHistoryRecord> {
     return this.prisma.scrapingHistory.create({
       data: {

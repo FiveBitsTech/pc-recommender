@@ -34,6 +34,10 @@ import { useSettings } from '@core/hooks/useSettings'
 const LoginV2 = ({ mode }) => {
   // States
   const [isPasswordShown, setIsPasswordShown] = useState(false)
+  const [email, setEmail] = useState('admin@pc-cotiza.local')
+  const [password, setPassword] = useState('Admin123!')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
   // Vars
   const darkImg = '/images/pages/auth-v2-mask-dark.png'
@@ -93,17 +97,37 @@ const LoginV2 = ({ mode }) => {
           <form
             noValidate
             autoComplete='off'
-            onSubmit={e => {
+            onSubmit={async e => {
               e.preventDefault()
-              router.push('/')
+              setError('')
+              setLoading(true)
+              try {
+                const { loginRequest } = await import('@/api/auth')
+                const { setAuthSession } = await import('@/utils/authSession')
+                const data = await loginRequest({ email, password })
+                setAuthSession(data)
+                router.push('/home')
+              } catch (err) {
+                setError(err?.message || 'No se pudo iniciar sesión')
+              } finally {
+                setLoading(false)
+              }
             }}
             className='flex flex-col gap-5'
           >
-            <TextField autoFocus fullWidth label='Email' />
+            <TextField
+              autoFocus
+              fullWidth
+              label='Email'
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+            />
             <TextField
               fullWidth
               label='Password'
               type={isPasswordShown ? 'text' : 'password'}
+              value={password}
+              onChange={e => setPassword(e.target.value)}
               slotProps={{
                 input: {
                   endAdornment: (
@@ -121,14 +145,19 @@ const LoginV2 = ({ mode }) => {
                 }
               }}
             />
+            {error ? (
+              <Typography color='error.main' variant='body2'>
+                {error}
+              </Typography>
+            ) : null}
             <div className='flex justify-between items-center flex-wrap gap-x-3 gap-y-1'>
               <FormControlLabel control={<Checkbox />} label='Remember me' />
               <Typography className='text-end' color='primary.main' component={Link}>
                 Forgot password?
               </Typography>
             </div>
-            <Button fullWidth variant='contained' type='submit'>
-              Log In
+            <Button fullWidth variant='contained' type='submit' disabled={loading}>
+              {loading ? 'Ingresando...' : 'Log In'}
             </Button>
             <div className='flex justify-center items-center flex-wrap gap-2'>
               <Typography>New on our platform?</Typography>

@@ -27,6 +27,9 @@ const asText = (value: unknown): string | null => {
   return null
 }
 
+// Los VarChar de product_specs son 255 (processor, gpu) y 100 (resto).
+const clamp = (value: string | null, max: number) => (value && value.length > max ? value.slice(0, max) : value)
+
 export const projectSpecsToFlat = (specs?: ScrapedSpecs | null) => {
   if (!specs) {
     return {
@@ -40,12 +43,12 @@ export const projectSpecsToFlat = (specs?: ScrapedSpecs | null) => {
   }
 
   return {
-    processor: asText(specs.processor),
-    gpu: asText(specs.gpu),
-    ram: asText(specs.ram),
-    storage: asText(specs.storage),
-    screen: asText(specs.screen),
-    operatingSystem: asText(specs.operating_system ?? specs.operatingSystem),
+    processor: clamp(asText(specs.processor), 255),
+    gpu: clamp(asText(specs.gpu), 255),
+    ram: clamp(asText(specs.ram), 100),
+    storage: clamp(asText(specs.storage), 100),
+    screen: clamp(asText(specs.screen), 100),
+    operatingSystem: clamp(asText(specs.operating_system ?? specs.operatingSystem), 100),
   }
 }
 

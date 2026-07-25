@@ -1,14 +1,22 @@
+'use client'
+
 // MUI Imports
 import { useTheme } from '@mui/material/styles'
+import Chip from '@mui/material/Chip'
 
 // Third-party Imports
 import PerfectScrollbar from 'react-perfect-scrollbar'
 
 // Component Imports
-import { Menu, MenuItem } from '@menu/vertical-menu'
+import { Menu, MenuItem, MenuSection } from '@menu/vertical-menu'
 
 // Hook Imports
 import useVerticalNav from '@menu/hooks/useVerticalNav'
+import { useAuthUser } from '@/hooks/useAuthUser'
+import { useShowPerfilMenu } from '@/hooks/useShowPerfilMenu'
+
+// Data Imports
+import { panelMenuItems, perfilMenuItems } from '@components/layout/shared/appMenuItems'
 
 // Styled Component Imports
 import StyledVerticalNavExpandIcon from '@menu/styles/vertical/StyledVerticalNavExpandIcon'
@@ -24,17 +32,15 @@ const RenderExpandIcon = ({ open, transitionDuration }) => (
 )
 
 const VerticalMenu = ({ scrollMenu }) => {
-  // Hooks
   const theme = useTheme()
   const verticalNavOptions = useVerticalNav()
+  const { isAdmin } = useAuthUser()
+  const { showPerfilMenu } = useShowPerfilMenu()
 
-  // Vars
   const { isBreakpointReached, transitionDuration } = verticalNavOptions
   const ScrollWrapper = isBreakpointReached ? 'div' : PerfectScrollbar
 
   return (
-    // eslint-disable-next-line lines-around-comment
-    /* Custom scrollbar instead of browser scroll, remove if you want browser scroll only */
     <ScrollWrapper
       {...(isBreakpointReached
         ? {
@@ -46,8 +52,6 @@ const VerticalMenu = ({ scrollMenu }) => {
             onScrollY: container => scrollMenu(container, true)
           })}
     >
-      {/* Incase you also want to scroll NavHeader to scroll with Vertical Menu, remove NavHeader from above and paste it below this comment */}
-      {/* Vertical Menu */}
       <Menu
         popoutMenuOffset={{ mainAxis: 10 }}
         menuItemStyles={menuItemStyles(verticalNavOptions, theme)}
@@ -55,37 +59,33 @@ const VerticalMenu = ({ scrollMenu }) => {
         renderExpandedMenuItemIcon={{ icon: <i className='ri-circle-line' /> }}
         menuSectionStyles={menuSectionStyles(verticalNavOptions, theme)}
       >
-        <MenuItem href='/home' icon={<i className='ri-home-smile-line' />}>
-          Home
-        </MenuItem>
-        <MenuItem href='/requirements' icon={<i className='ri-robot-2-line' />}>
-          Nueva cotización
-        </MenuItem>
-        <MenuItem href='/history' icon={<i className='ri-history-line' />}>
-          Mis cotizaciones
-        </MenuItem>
-        <MenuItem href='/comparisons' icon={<i className='ri-scales-3-line' />}>
-          Comparaciones
-        </MenuItem>
-        <MenuItem href='/builder' icon={<i className='ri-tools-line' />}>
-          Armador de PC
-        </MenuItem>
-        <MenuItem href='/favorites' icon={<i className='ri-heart-line' />}>
-          Favoritos
-        </MenuItem>
-        <MenuItem href='/settings' icon={<i className='ri-settings-3-line' />}>
-          Configuración
-        </MenuItem>
+        {isAdmin ? (
+          <MenuSection label='Panel'>
+            {panelMenuItems.map(item => (
+              <MenuItem
+                key={`panel-${item.href}`}
+                href={item.href}
+                icon={<i className={item.icon} />}
+                {...(item.suffix?.label
+                  ? { suffix: <Chip label={item.suffix.label} color={item.suffix.color || 'error'} size='small' /> }
+                  : {})}
+              >
+                {item.label}
+              </MenuItem>
+            ))}
+          </MenuSection>
+        ) : null}
+
+        {!isAdmin || showPerfilMenu ? (
+          <MenuSection label='Perfil'>
+            {perfilMenuItems.map(item => (
+              <MenuItem key={`perfil-${item.href}`} href={item.href} icon={<i className={item.icon} />}>
+                {item.label}
+              </MenuItem>
+            ))}
+          </MenuSection>
+        ) : null}
       </Menu>
-      {/* <Menu
-          popoutMenuOffset={{ mainAxis: 10 }}
-          menuItemStyles={menuItemStyles(verticalNavOptions, theme)}
-          renderExpandIcon={({ open }) => <RenderExpandIcon open={open} transitionDuration={transitionDuration} />}
-          renderExpandedMenuItemIcon={{ icon: <i className='ri-circle-line' /> }}
-          menuSectionStyles={menuSectionStyles(verticalNavOptions, theme)}
-        >
-          <GenerateVerticalMenu menuData={menuData(dictionary)} />
-        </Menu> */}
     </ScrollWrapper>
   )
 }

@@ -9,13 +9,21 @@ export class UpsertCompanyDto {
   @MinLength(2)
   name!: string
 
-  @IsOptional()
   @IsString()
-  website?: string
+  @MinLength(8)
+  website!: string
 
   @IsOptional()
   @IsString()
   logoUrl?: string
+
+  @IsOptional()
+  @IsBoolean()
+  logoDarkBg?: boolean
+
+  @IsOptional()
+  @IsString()
+  logoBgColor?: string | null
 
   @IsOptional()
   @IsBoolean()
@@ -39,11 +47,20 @@ export class UpdateCompanyDto {
 
   @IsOptional()
   @IsString()
-  website?: string | null
+  @MinLength(8)
+  website?: string
 
   @IsOptional()
   @IsString()
   logoUrl?: string | null
+
+  @IsOptional()
+  @IsBoolean()
+  logoDarkBg?: boolean
+
+  @IsOptional()
+  @IsString()
+  logoBgColor?: string | null
 
   @IsOptional()
   @IsBoolean()

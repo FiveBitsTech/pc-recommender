@@ -130,3 +130,31 @@ code {
   background-color: rgb(var(--mui-palette-info-mainChannel) / 0.08);
   border: 0;
 }
+
+/*
+  Primer paint del shell (patrón pasalasfijas):
+  el script beforeInteractive fija data-nav-viewport antes de React.
+  Así el sidebar no “salta” de desktop a drawer en F5 móvil.
+*/
+html[data-nav-viewport='mobile'] .ts-vertical-nav-root {
+  position: fixed !important;
+  inset-block-start: 0;
+  block-size: 100%;
+  inset-inline-start: -260px;
+  z-index: 100;
+  margin: 0;
+}
+
+html[data-nav-viewport='mobile'] .ts-vertical-nav-root.ts-toggled {
+  inset-inline-start: 0;
+}
+
+html[data-nav-viewport='mobile'][data-nav-collapsed] .ts-vertical-nav-root:not(.ts-toggled) {
+  inset-inline-start: -68px;
+}
+
+/* Cookie layout=collapsed: ancho estrecho antes de que VerticalNav context hidrate */
+html[data-nav-collapsed] .ts-vertical-nav-root:not(.ts-breakpoint-reached):not(.ts-hovered) {
+  inline-size: 68px !important;
+  min-inline-size: 68px !important;
+}
