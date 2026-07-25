@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common'
+import type { AdminPageParams } from '../../domain/admin-page'
 import {
   PRODUCT_REPOSITORY,
   type ProductRepository,
@@ -10,8 +11,7 @@ export class ListAdminSpecsUseCase {
     @Inject(PRODUCT_REPOSITORY) private readonly productRepository: ProductRepository,
   ) {}
 
-  async execute() {
-    const rows = await this.productRepository.listAdminSpecs()
-    return { items: rows }
+  async execute(params?: AdminPageParams) {
+    return this.productRepository.listAdminSpecs(params)
   }
 }

@@ -16,17 +16,15 @@ import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
 
 import tableStyles from '@core/styles/table.module.css'
-import {
-  notificationErrorMessage,
-  notificationSuccesMessage
-} from '@/components/ToastNotification'
+import { notificationErrorMessage, notificationSuccesMessage } from '@/components/ToastNotification'
 import { useGetAdminCompaniesQuery } from '@/views/companies/api/companiesApi'
-import { useClientPagination } from '@/views/scraping/hooks/useClientPagination'
 
+import { useDeleteAdminProductMutation, useGetAdminProductsQuery } from '../api/adminCatalogApi'
 import {
-  useDeleteAdminProductMutation,
-  useGetAdminProductsQuery
-} from '../api/adminCatalogApi'
+  useDebouncedValue,
+  useResetPageOnFilter,
+  useServerPagination
+} from '../hooks/useServerPagination'
 import AdminBodyGate from './AdminBodyGate'
 import AdminEmptyState from './AdminEmptyState'
 import AdminPanelHeader from './AdminPanelHeader'
@@ -34,7 +32,9 @@ import ProductDrawer from './ProductDrawer'
 
 const formatPrice = item => {
   const p = item?.latestPrice
+
   if (!p) return '—'
+
   return `${p.currency || 'PEN'} ${Number(p.price).toLocaleString('es-PE', { minimumFractionDigits: 2 })}`
 }
 
@@ -43,24 +43,33 @@ const ProductsPanel = ({ skip }) => {
   const [companyId, setCompanyId] = useState('')
   const [selectedId, setSelectedId] = useState(null)
   const [deleteId, setDeleteId] = useState(null)
+  const pager = useServerPagination({ defaultPageSize: 10 })
+  const debouncedSearch = useDebouncedValue(search)
 
   const { data: companiesData } = useGetAdminCompaniesQuery(undefined, { skip })
+
   const queryArgs = useMemo(
     () => ({
-      q: search.trim() || undefined,
-      companyId: companyId ? Number(companyId) : undefined
+      q: debouncedSearch.trim() || undefined,
+      companyId: companyId ? Number(companyId) : undefined,
+      page: pager.page,
+      pageSize: pager.pageSize
     }),
-    [search, companyId]
+    [debouncedSearch, companyId, pager.page, pager.pageSize]
   )
+
+  useResetPageOnFilter(pager.resetPage, debouncedSearch, companyId)
+
   const { data, isLoading, isFetching } = useGetAdminProductsQuery(queryArgs, { skip })
   const [deleteProduct, deleteState] = useDeleteAdminProductMutation()
 
   const items = data?.items ?? []
-  const pager = useClientPagination(items, { defaultPageSize: 10 })
+  const total = data?.total ?? 0
   const companies = companiesData?.items ?? []
 
   const handleDelete = async () => {
     if (!deleteId) return
+
     try {
       await deleteProduct(deleteId).unwrap()
       notificationSuccesMessage('Producto eliminado')
@@ -70,6 +79,7 @@ const ProductsPanel = ({ skip }) => {
       const msg = Array.isArray(err?.data?.message)
         ? err.data.message.join(', ')
         : err?.data?.message || err?.error || 'No se pudo eliminar'
+
       notificationErrorMessage(msg)
     }
   }
@@ -79,7 +89,7 @@ const ProductsPanel = ({ skip }) => {
       <Card>
         <AdminPanelHeader
           title='Productos scrapeados'
-          subtitle={`${items.length} en catálogo${isFetching && !isLoading ? ' · actualizando…' : ''}`}
+          subtitle={`${total} en catálogo${isFetching && !isLoading ? ' · actualizando…' : ''}`}
           search={search}
           onSearchChange={setSearch}
           companyId={companyId}
@@ -93,9 +103,9 @@ const ProductsPanel = ({ skip }) => {
           empty={
             <AdminEmptyState
               icon='ri-box-3-line'
-              title={search || companyId ? 'Sin resultados' : 'Sin productos'}
+              title={debouncedSearch || companyId ? 'Sin resultados' : 'Sin productos'}
               description={
-                search || companyId
+                debouncedSearch || companyId
                   ? 'Prueba otro término o empresa.'
                   : 'Corré un scraping para poblar el catálogo.'
               }
@@ -116,7 +126,7 @@ const ProductsPanel = ({ skip }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {pager.pagedItems.map(item => (
+                  {items.map(item => (
                     <tr key={item.id}>
                       <td>
                         <div className='flex items-center gap-3'>
@@ -192,7 +202,7 @@ const ProductsPanel = ({ skip }) => {
             <TablePagination
               component='div'
               className='border-bs'
-              count={pager.total}
+              count={total}
               page={pager.page}
               rowsPerPage={pager.pageSize}
               rowsPerPageOptions={pager.pageSizeOptions}

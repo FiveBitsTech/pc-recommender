@@ -2,6 +2,7 @@
 
 // MUI Imports
 import { useTheme } from '@mui/material/styles'
+import Chip from '@mui/material/Chip'
 
 // Component Imports
 import HorizontalNav, { Menu, MenuItem, SubMenu } from '@menu/horizontal-menu'
@@ -11,6 +12,7 @@ import VerticalNavContent from './VerticalNavContent'
 import useVerticalNav from '@menu/hooks/useVerticalNav'
 import { useSettings } from '@core/hooks/useSettings'
 import { useAuthUser } from '@/hooks/useAuthUser'
+import { useShowPerfilMenu } from '@/hooks/useShowPerfilMenu'
 
 // Data Imports
 import { panelMenuItems, perfilMenuItems } from '@components/layout/shared/appMenuItems'
@@ -43,6 +45,7 @@ const HorizontalMenu = () => {
   const theme = useTheme()
   const { settings } = useSettings()
   const { isAdmin } = useAuthUser()
+  const { showPerfilMenu } = useShowPerfilMenu()
 
   const { skin } = settings
   const { transitionDuration } = verticalNavOptions
@@ -78,20 +81,29 @@ const HorizontalMenu = () => {
         {isAdmin ? (
           <SubMenu label='Panel' icon={<i className='ri-shield-user-line' />}>
             {panelMenuItems.map(item => (
-              <MenuItem key={`panel-${item.href}`} href={item.href} icon={<i className={item.icon} />}>
+              <MenuItem
+                key={`panel-${item.href}`}
+                href={item.href}
+                icon={<i className={item.icon} />}
+                {...(item.suffix?.label
+                  ? { suffix: <Chip label={item.suffix.label} color={item.suffix.color || 'error'} size='small' /> }
+                  : {})}
+              >
                 {item.label}
               </MenuItem>
             ))}
           </SubMenu>
         ) : null}
 
-        <SubMenu label='Perfil' icon={<i className='ri-user-line' />}>
-          {perfilMenuItems.map(item => (
-            <MenuItem key={`perfil-${item.href}`} href={item.href} icon={<i className={item.icon} />}>
-              {item.label}
-            </MenuItem>
-          ))}
-        </SubMenu>
+        {!isAdmin || showPerfilMenu ? (
+          <SubMenu label='Perfil' icon={<i className='ri-user-line' />}>
+            {perfilMenuItems.map(item => (
+              <MenuItem key={`perfil-${item.href}`} href={item.href} icon={<i className={item.icon} />}>
+                {item.label}
+              </MenuItem>
+            ))}
+          </SubMenu>
+        ) : null}
       </Menu>
     </HorizontalNav>
   )

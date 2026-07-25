@@ -2,6 +2,7 @@
 
 // MUI Imports
 import { useTheme } from '@mui/material/styles'
+import Chip from '@mui/material/Chip'
 
 // Third-party Imports
 import PerfectScrollbar from 'react-perfect-scrollbar'
@@ -12,6 +13,7 @@ import { Menu, MenuItem, MenuSection } from '@menu/vertical-menu'
 // Hook Imports
 import useVerticalNav from '@menu/hooks/useVerticalNav'
 import { useAuthUser } from '@/hooks/useAuthUser'
+import { useShowPerfilMenu } from '@/hooks/useShowPerfilMenu'
 
 // Data Imports
 import { panelMenuItems, perfilMenuItems } from '@components/layout/shared/appMenuItems'
@@ -33,6 +35,7 @@ const VerticalMenu = ({ scrollMenu }) => {
   const theme = useTheme()
   const verticalNavOptions = useVerticalNav()
   const { isAdmin } = useAuthUser()
+  const { showPerfilMenu } = useShowPerfilMenu()
 
   const { isBreakpointReached, transitionDuration } = verticalNavOptions
   const ScrollWrapper = isBreakpointReached ? 'div' : PerfectScrollbar
@@ -59,20 +62,29 @@ const VerticalMenu = ({ scrollMenu }) => {
         {isAdmin ? (
           <MenuSection label='Panel'>
             {panelMenuItems.map(item => (
-              <MenuItem key={`panel-${item.href}`} href={item.href} icon={<i className={item.icon} />}>
+              <MenuItem
+                key={`panel-${item.href}`}
+                href={item.href}
+                icon={<i className={item.icon} />}
+                {...(item.suffix?.label
+                  ? { suffix: <Chip label={item.suffix.label} color={item.suffix.color || 'error'} size='small' /> }
+                  : {})}
+              >
                 {item.label}
               </MenuItem>
             ))}
           </MenuSection>
         ) : null}
 
-        <MenuSection label='Perfil'>
-          {perfilMenuItems.map(item => (
-            <MenuItem key={`perfil-${item.href}`} href={item.href} icon={<i className={item.icon} />}>
-              {item.label}
-            </MenuItem>
-          ))}
-        </MenuSection>
+        {!isAdmin || showPerfilMenu ? (
+          <MenuSection label='Perfil'>
+            {perfilMenuItems.map(item => (
+              <MenuItem key={`perfil-${item.href}`} href={item.href} icon={<i className={item.icon} />}>
+                {item.label}
+              </MenuItem>
+            ))}
+          </MenuSection>
+        ) : null}
       </Menu>
     </ScrollWrapper>
   )

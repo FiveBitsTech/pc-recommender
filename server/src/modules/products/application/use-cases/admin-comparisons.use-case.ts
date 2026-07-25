@@ -1,4 +1,5 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common'
+import type { AdminPageParams } from '../../domain/admin-page'
 import {
   PRODUCT_REPOSITORY,
   type ProductRepository,
@@ -10,9 +11,8 @@ export class ListAdminComparisonsUseCase {
     @Inject(PRODUCT_REPOSITORY) private readonly productRepository: ProductRepository,
   ) {}
 
-  async execute() {
-    const rows = await this.productRepository.listAdminComparisons()
-    return { items: rows }
+  async execute(params?: AdminPageParams) {
+    return this.productRepository.listAdminComparisons(params)
   }
 }
 

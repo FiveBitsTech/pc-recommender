@@ -26,69 +26,73 @@ export class IngestScrapedBatchUseCase {
     })
   }
 
-  // Persiste una ficha; se llama por producto para que el catálogo se llene mientras corre el scrape.
+  // Una sola conexión por ficha (BD remota: evita saturar el pool con N round-trips).
   async ingestProduct(companyId: number, item: ScrapedProductItem, fallbackDate?: string): Promise<boolean> {
     const productUrl = item.product.productUrl
     if (!productUrl) return false
 
-    const product = await this.prisma.product.upsert({
-      where: {
-        companyId_productUrl: { companyId, productUrl },
-      },
-      create: {
-        companyId,
-        name: item.product.name,
-        brand: item.product.brand ?? null,
-        model: item.product.model ?? null,
-        category: item.product.category ?? null,
-        productUrl,
-        imageUrl: item.product.imageUrl ?? null,
-        externalSku: item.product.externalSku ?? null,
-      },
-      update: {
-        name: item.product.name,
-        brand: item.product.brand ?? null,
-        model: item.product.model ?? null,
-        category: item.product.category ?? null,
-        imageUrl: item.product.imageUrl ?? null,
-        externalSku: item.product.externalSku ?? null,
-      },
-    })
-
     const flat = projectSpecsToFlat(item.specs)
-    await this.prisma.productSpec.upsert({
-      where: { productId: product.id },
-      create: { productId: product.id, ...flat },
-      update: flat,
-    })
+    const priceUpdatedAt = new Date(item.price.updatedAt || fallbackDate || Date.now())
 
-    await this.prisma.productPrice.create({
-      data: {
-        productId: product.id,
-        price: item.price.price,
-        currency: item.price.currency || 'PEN',
-        available: item.price.available ?? true,
-        stockQty: item.price.stockQty ?? null,
-        updatedAt: new Date(item.price.updatedAt || fallbackDate || Date.now()),
-      },
-    })
-
-    for (const rawTag of item.tags ?? []) {
-      const name = normalizeTagName(rawTag)
-      if (!name) continue
-      const tag = await this.prisma.productTag.upsert({
-        where: { name },
-        create: { name },
-        update: {},
-      })
-      await this.prisma.productTagRelation.upsert({
+    await this.prisma.$transaction(async tx => {
+      const product = await tx.product.upsert({
         where: {
-          productId_tagId: { productId: product.id, tagId: tag.id },
+          companyId_productUrl: { companyId, productUrl },
         },
-        create: { productId: product.id, tagId: tag.id },
-        update: {},
+        create: {
+          companyId,
+          name: item.product.name,
+          brand: item.product.brand ?? null,
+          model: item.product.model ?? null,
+          category: item.product.category ?? null,
+          productUrl,
+          imageUrl: item.product.imageUrl ?? null,
+          externalSku: item.product.externalSku ?? null,
+        },
+        update: {
+          name: item.product.name,
+          brand: item.product.brand ?? null,
+          model: item.product.model ?? null,
+          category: item.product.category ?? null,
+          imageUrl: item.product.imageUrl ?? null,
+          externalSku: item.product.externalSku ?? null,
+        },
       })
-    }
+
+      await tx.productSpec.upsert({
+        where: { productId: product.id },
+        create: { productId: product.id, ...flat },
+        update: flat,
+      })
+
+      await tx.productPrice.create({
+        data: {
+          productId: product.id,
+          price: item.price.price,
+          currency: item.price.currency || 'PEN',
+          available: item.price.available ?? true,
+          stockQty: item.price.stockQty ?? null,
+          updatedAt: priceUpdatedAt,
+        },
+      })
+
+      for (const rawTag of item.tags ?? []) {
+        const name = normalizeTagName(rawTag)
+        if (!name) continue
+        const tag = await tx.productTag.upsert({
+          where: { name },
+          create: { name },
+          update: {},
+        })
+        await tx.productTagRelation.upsert({
+          where: {
+            productId_tagId: { productId: product.id, tagId: tag.id },
+          },
+          create: { productId: product.id, tagId: tag.id },
+          update: {},
+        })
+      }
+    })
 
     return true
   }

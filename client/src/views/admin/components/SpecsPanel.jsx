@@ -8,9 +8,13 @@ import Typography from '@mui/material/Typography'
 
 import tableStyles from '@core/styles/table.module.css'
 import { useGetAdminCompaniesQuery } from '@/views/companies/api/companiesApi'
-import { useClientPagination } from '@/views/scraping/hooks/useClientPagination'
 
 import { useGetAdminSpecsQuery } from '../api/adminCatalogApi'
+import {
+  useDebouncedValue,
+  useResetPageOnFilter,
+  useServerPagination
+} from '../hooks/useServerPagination'
 import AdminBodyGate from './AdminBodyGate'
 import AdminEmptyState from './AdminEmptyState'
 import AdminPanelHeader from './AdminPanelHeader'
@@ -18,30 +22,33 @@ import AdminPanelHeader from './AdminPanelHeader'
 const SpecsPanel = ({ skip }) => {
   const [search, setSearch] = useState('')
   const [companyId, setCompanyId] = useState('')
+  const pager = useServerPagination({ defaultPageSize: 15 })
+  const debouncedSearch = useDebouncedValue(search)
   const { data: companiesData } = useGetAdminCompaniesQuery(undefined, { skip })
-  const { data, isLoading } = useGetAdminSpecsQuery(undefined, { skip })
+
+  const queryArgs = useMemo(
+    () => ({
+      q: debouncedSearch.trim() || undefined,
+      companyId: companyId ? Number(companyId) : undefined,
+      page: pager.page,
+      pageSize: pager.pageSize
+    }),
+    [debouncedSearch, companyId, pager.page, pager.pageSize]
+  )
+
+  useResetPageOnFilter(pager.resetPage, debouncedSearch, companyId)
+
+  const { data, isLoading } = useGetAdminSpecsQuery(queryArgs, { skip })
   const companies = companiesData?.items ?? []
-
-  const items = useMemo(() => {
-    const q = search.trim().toLowerCase()
-    const companyName = companies.find(c => String(c.id) === companyId)?.name
-    return (data?.items ?? []).filter(item => {
-      if (companyName && item.companyName !== companyName) return false
-      if (!q) return true
-      return [item.productName, item.companyName, item.processor, item.gpu, item.ram]
-        .filter(Boolean)
-        .some(v => String(v).toLowerCase().includes(q))
-    })
-  }, [data?.items, search, companyId, companies])
-
-  const pager = useClientPagination(items, { defaultPageSize: 15 })
-  const filteredEmpty = Boolean(search || companyId)
+  const items = data?.items ?? []
+  const total = data?.total ?? 0
+  const filteredEmpty = Boolean(debouncedSearch || companyId)
 
   return (
     <Card>
       <AdminPanelHeader
         title='Especificaciones'
-        subtitle={isLoading ? '…' : `${items.length} fichas técnicas`}
+        subtitle={isLoading ? '…' : `${total} fichas técnicas`}
         search={search}
         onSearchChange={setSearch}
         companyId={companyId}
@@ -77,7 +84,7 @@ const SpecsPanel = ({ skip }) => {
                 </tr>
               </thead>
               <tbody>
-                {pager.pagedItems.map(item => (
+                {items.map(item => (
                   <tr key={item.id}>
                     <td>
                       <Typography className='font-medium' color='text.primary'>
@@ -113,7 +120,7 @@ const SpecsPanel = ({ skip }) => {
           <TablePagination
             component='div'
             className='border-bs'
-            count={pager.total}
+            count={total}
             page={pager.page}
             rowsPerPage={pager.pageSize}
             rowsPerPageOptions={pager.pageSizeOptions}

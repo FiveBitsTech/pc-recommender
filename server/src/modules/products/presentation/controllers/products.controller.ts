@@ -62,14 +62,20 @@ export class ProductsController {
     return this.listAdminProductsUseCase.execute({
       q: query.q,
       companyId: query.companyId,
+      page: query.page,
+      pageSize: query.pageSize,
     })
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Get('admin/tags')
-  listTags() {
-    return this.listProductTagsUseCase.execute()
+  listTags(@Query() query: ListAdminProductsQueryDto) {
+    return this.listProductTagsUseCase.execute({
+      q: query.q,
+      page: query.page,
+      pageSize: query.pageSize,
+    })
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -82,22 +88,36 @@ export class ProductsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Get('admin/prices')
-  listPrices() {
-    return this.listAdminPricesUseCase.execute()
+  listPrices(@Query() query: ListAdminProductsQueryDto) {
+    return this.listAdminPricesUseCase.execute({
+      q: query.q,
+      companyId: query.companyId,
+      page: query.page,
+      pageSize: query.pageSize,
+    })
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Get('admin/specs')
-  listSpecs() {
-    return this.listAdminSpecsUseCase.execute()
+  listSpecs(@Query() query: ListAdminProductsQueryDto) {
+    return this.listAdminSpecsUseCase.execute({
+      q: query.q,
+      companyId: query.companyId,
+      page: query.page,
+      pageSize: query.pageSize,
+    })
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Get('admin/comparisons')
-  listComparisons() {
-    return this.listAdminComparisonsUseCase.execute()
+  listComparisons(@Query() query: ListAdminProductsQueryDto) {
+    return this.listAdminComparisonsUseCase.execute({
+      q: query.q,
+      page: query.page,
+      pageSize: query.pageSize,
+    })
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -110,8 +130,12 @@ export class ProductsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Get('admin/recommendations')
-  listRecommendations() {
-    return this.listAdminRecommendationsUseCase.execute()
+  listRecommendations(@Query() query: ListAdminProductsQueryDto) {
+    return this.listAdminRecommendationsUseCase.execute({
+      q: query.q,
+      page: query.page,
+      pageSize: query.pageSize,
+    })
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

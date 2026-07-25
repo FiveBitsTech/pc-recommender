@@ -1,3 +1,5 @@
+import type { AdminPageParams, AdminPageResult } from '../admin-page'
+
 export const PRODUCT_REPOSITORY = 'PRODUCT_REPOSITORY'
 
 export type ProductSpecs = {
@@ -48,6 +50,8 @@ export type ProductAdminItem = ProductListItem & {
 export type ProductAdminListParams = {
   q?: string
   companyId?: number
+  page?: number
+  pageSize?: number
 }
 
 export type ProductUpdateInput = {
@@ -123,16 +127,16 @@ export interface ProductRepository {
   findAll(): Promise<ProductListItem[]>
   findById(id: number): Promise<ProductListItem | null>
   findByFilters(filters: ProductFilterParams): Promise<ProductListItem[]>
-  findAdminAll(params?: ProductAdminListParams): Promise<ProductAdminItem[]>
+  findAdminAll(params?: ProductAdminListParams): Promise<AdminPageResult<ProductAdminItem>>
   findAdminById(id: number): Promise<ProductAdminItem | null>
   updateAdmin(id: number, data: ProductUpdateInput): Promise<ProductAdminItem | null>
   deleteById(id: number): Promise<boolean>
-  listTags(): Promise<ProductTagItem[]>
+  listTags(params?: AdminPageParams): Promise<AdminPageResult<ProductTagItem>>
   deleteTagById(id: number): Promise<boolean>
-  listAdminPrices(): Promise<AdminPriceRow[]>
-  listAdminSpecs(): Promise<AdminSpecRow[]>
-  listAdminComparisons(): Promise<AdminComparisonRow[]>
+  listAdminPrices(params?: AdminPageParams): Promise<AdminPageResult<AdminPriceRow>>
+  listAdminSpecs(params?: AdminPageParams): Promise<AdminPageResult<AdminSpecRow>>
+  listAdminComparisons(params?: AdminPageParams): Promise<AdminPageResult<AdminComparisonRow>>
   deleteComparisonById(id: number): Promise<boolean>
-  listAdminRecommendations(): Promise<AdminRecommendationRow[]>
+  listAdminRecommendations(params?: AdminPageParams): Promise<AdminPageResult<AdminRecommendationRow>>
   deleteRecommendationById(id: number): Promise<boolean>
 }

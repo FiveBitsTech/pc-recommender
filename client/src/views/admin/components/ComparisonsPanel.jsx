@@ -15,44 +15,43 @@ import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 
 import tableStyles from '@core/styles/table.module.css'
-import {
-  notificationErrorMessage,
-  notificationSuccesMessage
-} from '@/components/ToastNotification'
-import { useGetAdminCompaniesQuery } from '@/views/companies/api/companiesApi'
-import { useClientPagination } from '@/views/scraping/hooks/useClientPagination'
+import { notificationErrorMessage, notificationSuccesMessage } from '@/components/ToastNotification'
 
+import { useDeleteAdminComparisonMutation, useGetAdminComparisonsQuery } from '../api/adminCatalogApi'
 import {
-  useDeleteAdminComparisonMutation,
-  useGetAdminComparisonsQuery
-} from '../api/adminCatalogApi'
+  useDebouncedValue,
+  useResetPageOnFilter,
+  useServerPagination
+} from '../hooks/useServerPagination'
 import AdminBodyGate from './AdminBodyGate'
 import AdminEmptyState from './AdminEmptyState'
 import AdminPanelHeader from './AdminPanelHeader'
 
 const ComparisonsPanel = ({ skip }) => {
   const [search, setSearch] = useState('')
-  const [companyId, setCompanyId] = useState('')
-  const { data: companiesData } = useGetAdminCompaniesQuery(undefined, { skip })
-  const { data, isLoading } = useGetAdminComparisonsQuery(undefined, { skip })
+  const pager = useServerPagination({ defaultPageSize: 15 })
+  const debouncedSearch = useDebouncedValue(search)
   const [deleteComparison, deleteState] = useDeleteAdminComparisonMutation()
   const [deleteId, setDeleteId] = useState(null)
-  const companies = companiesData?.items ?? []
 
-  const items = useMemo(() => {
-    const q = search.trim().toLowerCase()
-    return (data?.items ?? []).filter(item => {
-      if (!q) return true
-      return [item.productOneName, item.productTwoName, item.analysis]
-        .filter(Boolean)
-        .some(v => String(v).toLowerCase().includes(q))
-    })
-  }, [data?.items, search])
+  const queryArgs = useMemo(
+    () => ({
+      q: debouncedSearch.trim() || undefined,
+      page: pager.page,
+      pageSize: pager.pageSize
+    }),
+    [debouncedSearch, pager.page, pager.pageSize]
+  )
 
-  const pager = useClientPagination(items, { defaultPageSize: 15 })
+  useResetPageOnFilter(pager.resetPage, debouncedSearch)
+
+  const { data, isLoading } = useGetAdminComparisonsQuery(queryArgs, { skip })
+  const items = data?.items ?? []
+  const total = data?.total ?? 0
 
   const handleDelete = async () => {
     if (!deleteId) return
+
     try {
       await deleteComparison(deleteId).unwrap()
       notificationSuccesMessage('Comparación eliminada')
@@ -61,6 +60,7 @@ const ComparisonsPanel = ({ skip }) => {
       const msg = Array.isArray(err?.data?.message)
         ? err.data.message.join(', ')
         : err?.data?.message || err?.error || 'No se pudo eliminar'
+
       notificationErrorMessage(msg)
     }
   }
@@ -70,12 +70,10 @@ const ComparisonsPanel = ({ skip }) => {
       <Card>
         <AdminPanelHeader
           title='Comparaciones'
-          subtitle={isLoading ? '…' : `${items.length} comparaciones guardadas`}
+          subtitle={isLoading ? '…' : `${total} comparaciones guardadas`}
           search={search}
           onSearchChange={setSearch}
-          companyId={companyId}
-          onCompanyChange={setCompanyId}
-          companies={companies}
+          showCompany={false}
         />
 
         <AdminBodyGate
@@ -84,8 +82,8 @@ const ComparisonsPanel = ({ skip }) => {
           empty={
             <AdminEmptyState
               icon='ri-scales-3-line'
-              title={search ? 'Sin resultados' : 'Sin comparaciones'}
-              description={search ? 'Prueba otro término.' : 'Aún no hay comparaciones guardadas.'}
+              title={debouncedSearch ? 'Sin resultados' : 'Sin comparaciones'}
+              description={debouncedSearch ? 'Prueba otro término.' : 'Aún no hay comparaciones guardadas.'}
             />
           }
         >
@@ -102,7 +100,7 @@ const ComparisonsPanel = ({ skip }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {pager.pagedItems.map(item => (
+                  {items.map(item => (
                     <tr key={item.id}>
                       <td>
                         <Typography className='font-medium' color='text.primary'>
@@ -141,7 +139,7 @@ const ComparisonsPanel = ({ skip }) => {
             <TablePagination
               component='div'
               className='border-bs'
-              count={pager.total}
+              count={total}
               page={pager.page}
               rowsPerPage={pager.pageSize}
               rowsPerPageOptions={pager.pageSizeOptions}

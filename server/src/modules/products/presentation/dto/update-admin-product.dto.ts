@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer'
-import { IsInt, IsOptional, IsString, MaxLength, ValidateNested } from 'class-validator'
+import { IsInt, IsOptional, IsString, Max, MaxLength, Min, ValidateNested } from 'class-validator'
 
 class ProductSpecsDto {
   @IsOptional()
@@ -84,4 +84,17 @@ export class ListAdminProductsQueryDto {
   @Type(() => Number)
   @IsInt()
   companyId?: number
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  page?: number
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  pageSize?: number
 }

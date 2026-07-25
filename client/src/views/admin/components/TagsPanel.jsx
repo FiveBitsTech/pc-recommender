@@ -15,41 +15,43 @@ import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 
 import tableStyles from '@core/styles/table.module.css'
-import {
-  notificationErrorMessage,
-  notificationSuccesMessage
-} from '@/components/ToastNotification'
-import { useGetAdminCompaniesQuery } from '@/views/companies/api/companiesApi'
-import { useClientPagination } from '@/views/scraping/hooks/useClientPagination'
+import { notificationErrorMessage, notificationSuccesMessage } from '@/components/ToastNotification'
 
 import { useDeleteAdminTagMutation, useGetAdminTagsQuery } from '../api/adminCatalogApi'
+import {
+  useDebouncedValue,
+  useResetPageOnFilter,
+  useServerPagination
+} from '../hooks/useServerPagination'
 import AdminBodyGate from './AdminBodyGate'
 import AdminEmptyState from './AdminEmptyState'
 import AdminPanelHeader from './AdminPanelHeader'
 
 const TagsPanel = ({ skip }) => {
   const [search, setSearch] = useState('')
-  const [companyId, setCompanyId] = useState('')
-  const { data: companiesData } = useGetAdminCompaniesQuery(undefined, { skip })
-  const { data, isLoading } = useGetAdminTagsQuery(undefined, { skip })
+  const pager = useServerPagination({ defaultPageSize: 15 })
+  const debouncedSearch = useDebouncedValue(search)
   const [deleteTag, deleteState] = useDeleteAdminTagMutation()
   const [deleteId, setDeleteId] = useState(null)
-  const companies = companiesData?.items ?? []
 
-  const items = useMemo(() => {
-    const q = search.trim().toLowerCase()
-    return (data?.items ?? []).filter(tag => {
-      if (!q) return true
-      return String(tag.name || '')
-        .toLowerCase()
-        .includes(q)
-    })
-  }, [data?.items, search])
+  const queryArgs = useMemo(
+    () => ({
+      q: debouncedSearch.trim() || undefined,
+      page: pager.page,
+      pageSize: pager.pageSize
+    }),
+    [debouncedSearch, pager.page, pager.pageSize]
+  )
 
-  const pager = useClientPagination(items, { defaultPageSize: 15 })
+  useResetPageOnFilter(pager.resetPage, debouncedSearch)
+
+  const { data, isLoading } = useGetAdminTagsQuery(queryArgs, { skip })
+  const items = data?.items ?? []
+  const total = data?.total ?? 0
 
   const handleDelete = async () => {
     if (!deleteId) return
+
     try {
       await deleteTag(deleteId).unwrap()
       notificationSuccesMessage('Tag eliminado')
@@ -58,6 +60,7 @@ const TagsPanel = ({ skip }) => {
       const msg = Array.isArray(err?.data?.message)
         ? err.data.message.join(', ')
         : err?.data?.message || err?.error || 'No se pudo eliminar'
+
       notificationErrorMessage(msg)
     }
   }
@@ -67,12 +70,10 @@ const TagsPanel = ({ skip }) => {
       <Card>
         <AdminPanelHeader
           title='Etiquetas'
-          subtitle={isLoading ? '…' : `Etiquetas y conteo de relaciones (${items.length})`}
+          subtitle={isLoading ? '…' : `Etiquetas y conteo de relaciones (${total})`}
           search={search}
           onSearchChange={setSearch}
-          companyId={companyId}
-          onCompanyChange={setCompanyId}
-          companies={companies}
+          showCompany={false}
         />
 
         <AdminBodyGate
@@ -81,10 +82,8 @@ const TagsPanel = ({ skip }) => {
           empty={
             <AdminEmptyState
               icon='ri-price-tag-3-line'
-              title={search ? 'Sin resultados' : 'Sin etiquetas'}
-              description={
-                search ? 'Prueba otro término.' : 'Corré un scraping para poblar el catálogo.'
-              }
+              title={debouncedSearch ? 'Sin resultados' : 'Sin etiquetas'}
+              description={debouncedSearch ? 'Prueba otro término.' : 'Corré un scraping para poblar el catálogo.'}
             />
           }
         >
@@ -99,7 +98,7 @@ const TagsPanel = ({ skip }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {pager.pagedItems.map(tag => (
+                  {items.map(tag => (
                     <tr key={tag.id}>
                       <td>
                         <Typography className='font-medium' color='text.primary'>
@@ -126,7 +125,7 @@ const TagsPanel = ({ skip }) => {
             <TablePagination
               component='div'
               className='border-bs'
-              count={pager.total}
+              count={total}
               page={pager.page}
               rowsPerPage={pager.pageSize}
               rowsPerPageOptions={pager.pageSizeOptions}

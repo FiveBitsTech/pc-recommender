@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 
 import Typography from '@mui/material/Typography'
 
@@ -11,29 +11,38 @@ import { useAuthUser } from '@/hooks/useAuthUser'
 import AdminMenuLayout from './layout/AdminMenuLayout'
 import { adminNavData } from './utils/admin-menu-config'
 
+const tabFromLocation = () => {
+  if (typeof window === 'undefined') return 'productos'
+
+  const tab = new URLSearchParams(window.location.search).get('tab')
+
+  return adminNavData.some(t => t.id === tab) ? tab : 'productos'
+}
+
 const AdminPage = () => {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const { ready, isAdmin } = useAuthUser()
-  const tabFromUrl = searchParams.get('tab')
-  const initialTab = adminNavData.some(t => t.id === tabFromUrl) ? tabFromUrl : 'productos'
-  const [activeTab, setActiveTab] = useState(initialTab)
+
+  // Tab inicial fijo en SSR/hidratación; sync con ?tab= tras montar (sin useSearchParams → sin Suspense vacío).
+  const [activeTab, setActiveTab] = useState('productos')
 
   useEffect(() => {
     if (ready && !isAdmin) router.replace('/home')
   }, [ready, isAdmin, router])
 
   useEffect(() => {
-    if (adminNavData.some(t => t.id === tabFromUrl)) setActiveTab(tabFromUrl)
-  }, [tabFromUrl])
+    setActiveTab(tabFromLocation())
+  }, [])
 
   const onTabChange = id => {
     setActiveTab(id)
+
     if (typeof window !== 'undefined') {
       window.history.replaceState(null, '', `/admin?tab=${id}`)
     }
   }
 
+  // Cookie SSR ya da isAdmin; no vaciar shell con return null
   if (ready && !isAdmin) return null
 
   return (

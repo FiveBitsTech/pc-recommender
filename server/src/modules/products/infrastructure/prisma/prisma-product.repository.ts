@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
+import { normalizeAdminPage } from '../../domain/admin-page'
+import type { AdminPageParams, AdminPageResult } from '../../domain/admin-page'
 import { PrismaService } from '../../../../shared/prisma/prisma.service'
 import {
   AdminComparisonRow,
@@ -20,9 +22,17 @@ const listInclude = {
   prices: { orderBy: { updatedAt: 'desc' as const }, take: 1 },
 }
 
-const adminInclude = {
+const adminListInclude = {
   specs: true,
-  prices: { orderBy: { updatedAt: 'desc' as const } },
+  // Solo el precio vigente: el historial completo se carga en detalle / tab Precios.
+  prices: { orderBy: { updatedAt: 'desc' as const }, take: 1 },
+  company: { select: { id: true, name: true, slug: true } },
+  tagRelations: { include: { tag: true } },
+}
+
+const adminDetailInclude = {
+  specs: true,
+  prices: { orderBy: { updatedAt: 'desc' as const }, take: 50 },
   company: { select: { id: true, name: true, slug: true } },
   tagRelations: { include: { tag: true } },
 }
@@ -60,9 +70,10 @@ export class PrismaProductRepository implements ProductRepository {
     return products.map((p) => this.toListItem(p))
   }
 
-  async findAdminAll(params?: ProductAdminListParams): Promise<ProductAdminItem[]> {
+  async findAdminAll(params?: ProductAdminListParams): Promise<AdminPageResult<ProductAdminItem>> {
     const q = params?.q?.trim()
     const where: Prisma.ProductWhereInput = {}
+    const { page, pageSize, skip, take } = normalizeAdminPage(params)
 
     if (params?.companyId) where.companyId = params.companyId
     if (q) {
@@ -75,18 +86,29 @@ export class PrismaProductRepository implements ProductRepository {
       ]
     }
 
-    const products = await this.prisma.product.findMany({
-      where,
-      orderBy: { id: 'desc' },
-      include: adminInclude,
-    })
-    return products.map((p) => this.toAdminItem(p))
+    const [total, products] = await this.prisma.$transaction([
+      this.prisma.product.count({ where }),
+      this.prisma.product.findMany({
+        where,
+        orderBy: { id: 'desc' },
+        skip,
+        take,
+        include: adminListInclude,
+      }),
+    ])
+
+    return {
+      items: products.map((p) => this.toAdminItem(p)),
+      total,
+      page,
+      pageSize,
+    }
   }
 
   async findAdminById(id: number): Promise<ProductAdminItem | null> {
     const product = await this.prisma.product.findUnique({
       where: { id },
-      include: adminInclude,
+      include: adminDetailInclude,
     })
     return product ? this.toAdminItem(product) : null
   }
@@ -149,17 +171,35 @@ export class PrismaProductRepository implements ProductRepository {
     return true
   }
 
-  async listTags(): Promise<ProductTagItem[]> {
-    const tags = await this.prisma.productTag.findMany({
-      orderBy: { name: 'asc' },
-      include: { _count: { select: { relations: true } } },
-    })
-    return tags.map((t) => ({
-      id: t.id,
-      name: t.name,
-      productCount: t._count.relations,
-      createdAt: t.createdAt,
-    }))
+  async listTags(params?: AdminPageParams): Promise<AdminPageResult<ProductTagItem>> {
+    const q = params?.q?.trim()
+    const { page, pageSize, skip, take } = normalizeAdminPage(params)
+    const where: Prisma.ProductTagWhereInput = q
+      ? { name: { contains: q, mode: 'insensitive' } }
+      : {}
+
+    const [total, tags] = await this.prisma.$transaction([
+      this.prisma.productTag.count({ where }),
+      this.prisma.productTag.findMany({
+        where,
+        orderBy: { name: 'asc' },
+        skip,
+        take,
+        include: { _count: { select: { relations: true } } },
+      }),
+    ])
+
+    return {
+      items: tags.map((t) => ({
+        id: t.id,
+        name: t.name,
+        productCount: t._count.relations,
+        createdAt: t.createdAt,
+      })),
+      total,
+      page,
+      pageSize,
+    }
   }
 
   async deleteTagById(id: number): Promise<boolean> {
@@ -169,76 +209,151 @@ export class PrismaProductRepository implements ProductRepository {
     return true
   }
 
-  async listAdminPrices(): Promise<AdminPriceRow[]> {
-    const rows = await this.prisma.productPrice.findMany({
-      orderBy: { updatedAt: 'desc' },
-      include: {
-        product: {
-          select: {
-            id: true,
-            name: true,
-            company: { select: { name: true } },
+  async listAdminPrices(params?: AdminPageParams): Promise<AdminPageResult<AdminPriceRow>> {
+    const q = params?.q?.trim()
+    const { page, pageSize, skip, take } = normalizeAdminPage(params)
+    const where: Prisma.ProductPriceWhereInput = {}
+
+    if (params?.companyId) where.product = { companyId: params.companyId }
+    if (q) {
+      where.OR = [
+        { product: { name: { contains: q, mode: 'insensitive' } } },
+        { product: { company: { name: { contains: q, mode: 'insensitive' } } } },
+      ]
+    }
+
+    const [total, rows] = await this.prisma.$transaction([
+      this.prisma.productPrice.count({ where }),
+      this.prisma.productPrice.findMany({
+        where,
+        orderBy: { updatedAt: 'desc' },
+        skip,
+        take,
+        include: {
+          product: {
+            select: {
+              id: true,
+              name: true,
+              company: { select: { name: true } },
+            },
           },
         },
-      },
-    })
-    return rows.map((r) => ({
-      id: r.id,
-      productId: r.productId,
-      productName: r.product.name,
-      companyName: r.product.company.name,
-      price: r.price,
-      currency: r.currency,
-      available: r.available,
-      stockQty: r.stockQty,
-      updatedAt: r.updatedAt,
-    }))
+      }),
+    ])
+
+    return {
+      items: rows.map((r) => ({
+        id: r.id,
+        productId: r.productId,
+        productName: r.product.name,
+        companyName: r.product.company.name,
+        price: r.price,
+        currency: r.currency,
+        available: r.available,
+        stockQty: r.stockQty,
+        updatedAt: r.updatedAt,
+      })),
+      total,
+      page,
+      pageSize,
+    }
   }
 
-  async listAdminSpecs(): Promise<AdminSpecRow[]> {
-    const rows = await this.prisma.productSpec.findMany({
-      orderBy: { id: 'desc' },
-      include: {
-        product: {
-          select: {
-            id: true,
-            name: true,
-            company: { select: { name: true } },
+  async listAdminSpecs(params?: AdminPageParams): Promise<AdminPageResult<AdminSpecRow>> {
+    const q = params?.q?.trim()
+    const { page, pageSize, skip, take } = normalizeAdminPage(params)
+    const where: Prisma.ProductSpecWhereInput = {}
+
+    if (params?.companyId) where.product = { companyId: params.companyId }
+    if (q) {
+      where.OR = [
+        { product: { name: { contains: q, mode: 'insensitive' } } },
+        { product: { company: { name: { contains: q, mode: 'insensitive' } } } },
+        { processor: { contains: q, mode: 'insensitive' } },
+        { gpu: { contains: q, mode: 'insensitive' } },
+        { ram: { contains: q, mode: 'insensitive' } },
+      ]
+    }
+
+    const [total, rows] = await this.prisma.$transaction([
+      this.prisma.productSpec.count({ where }),
+      this.prisma.productSpec.findMany({
+        where,
+        orderBy: { id: 'desc' },
+        skip,
+        take,
+        include: {
+          product: {
+            select: {
+              id: true,
+              name: true,
+              company: { select: { name: true } },
+            },
           },
         },
-      },
-    })
-    return rows.map((r) => ({
-      id: r.id,
-      productId: r.productId,
-      productName: r.product.name,
-      companyName: r.product.company.name,
-      processor: r.processor,
-      gpu: r.gpu,
-      ram: r.ram,
-      storage: r.storage,
-      screen: r.screen,
-      operatingSystem: r.operatingSystem,
-    }))
+      }),
+    ])
+
+    return {
+      items: rows.map((r) => ({
+        id: r.id,
+        productId: r.productId,
+        productName: r.product.name,
+        companyName: r.product.company.name,
+        processor: r.processor,
+        gpu: r.gpu,
+        ram: r.ram,
+        storage: r.storage,
+        screen: r.screen,
+        operatingSystem: r.operatingSystem,
+      })),
+      total,
+      page,
+      pageSize,
+    }
   }
 
-  async listAdminComparisons(): Promise<AdminComparisonRow[]> {
-    const rows = await this.prisma.productComparison.findMany({
-      orderBy: { id: 'desc' },
-      include: {
-        productOne: { select: { id: true, name: true } },
-        productTwo: { select: { id: true, name: true } },
-      },
-    })
-    return rows.map((r) => ({
-      id: r.id,
-      productOneId: r.productOneId,
-      productOneName: r.productOne.name,
-      productTwoId: r.productTwoId,
-      productTwoName: r.productTwo.name,
-      analysis: r.analysis,
-      createdAt: r.createdAt,
-    }))
+  async listAdminComparisons(params?: AdminPageParams): Promise<AdminPageResult<AdminComparisonRow>> {
+    const q = params?.q?.trim()
+    const { page, pageSize, skip, take } = normalizeAdminPage(params)
+    const where: Prisma.ProductComparisonWhereInput = q
+      ? {
+          OR: [
+            { productOne: { name: { contains: q, mode: 'insensitive' } } },
+            { productTwo: { name: { contains: q, mode: 'insensitive' } } },
+            { analysis: { contains: q, mode: 'insensitive' } },
+          ],
+        }
+      : {}
+
+    const [total, rows] = await this.prisma.$transaction([
+      this.prisma.productComparison.count({ where }),
+      this.prisma.productComparison.findMany({
+        where,
+        orderBy: { id: 'desc' },
+        skip,
+        take,
+        include: {
+          productOne: { select: { id: true, name: true } },
+          productTwo: { select: { id: true, name: true } },
+        },
+      }),
+    ])
+
+    return {
+      items: rows.map((r) => ({
+        id: r.id,
+        productOneId: r.productOneId,
+        productOneName: r.productOne.name,
+        productTwoId: r.productTwoId,
+        productTwoName: r.productTwo.name,
+        analysis: r.analysis,
+        createdAt: r.createdAt,
+      })),
+      total,
+      page,
+      pageSize,
+    }
   }
 
   async deleteComparisonById(id: number): Promise<boolean> {
@@ -251,22 +366,47 @@ export class PrismaProductRepository implements ProductRepository {
     return true
   }
 
-  async listAdminRecommendations(): Promise<AdminRecommendationRow[]> {
-    const rows = await this.prisma.recommendation.findMany({
-      orderBy: { id: 'desc' },
-      include: {
-        product: { select: { id: true, name: true } },
-      },
-    })
-    return rows.map((r) => ({
-      id: r.id,
-      productId: r.productId,
-      productName: r.product.name,
-      requirementId: r.requirementId,
-      score: r.score,
-      reason: r.reason,
-      createdAt: r.createdAt,
-    }))
+  async listAdminRecommendations(
+    params?: AdminPageParams,
+  ): Promise<AdminPageResult<AdminRecommendationRow>> {
+    const q = params?.q?.trim()
+    const { page, pageSize, skip, take } = normalizeAdminPage(params)
+    const where: Prisma.RecommendationWhereInput = q
+      ? {
+          OR: [
+            { product: { name: { contains: q, mode: 'insensitive' } } },
+            { reason: { contains: q, mode: 'insensitive' } },
+          ],
+        }
+      : {}
+
+    const [total, rows] = await this.prisma.$transaction([
+      this.prisma.recommendation.count({ where }),
+      this.prisma.recommendation.findMany({
+        where,
+        orderBy: { id: 'desc' },
+        skip,
+        take,
+        include: {
+          product: { select: { id: true, name: true } },
+        },
+      }),
+    ])
+
+    return {
+      items: rows.map((r) => ({
+        id: r.id,
+        productId: r.productId,
+        productName: r.product.name,
+        requirementId: r.requirementId,
+        score: r.score,
+        reason: r.reason,
+        createdAt: r.createdAt,
+      })),
+      total,
+      page,
+      pageSize,
+    }
   }
 
   async deleteRecommendationById(id: number): Promise<boolean> {

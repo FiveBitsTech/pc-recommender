@@ -13,7 +13,12 @@ export class ListAdminProductsUseCase {
   ) {}
 
   async execute(params?: ProductAdminListParams) {
-    const products = await this.productRepository.findAdminAll(params)
-    return { items: products.map(mapAdminProductItem) }
+    const result = await this.productRepository.findAdminAll(params)
+    return {
+      items: result.items.map(mapAdminProductItem),
+      total: result.total,
+      page: result.page,
+      pageSize: result.pageSize,
+    }
   }
 }

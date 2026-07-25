@@ -43,10 +43,10 @@ const data = [
   },
   {
     id: '7',
-    name: 'Preferencias',
+    name: 'Ajustes',
     url: '/settings',
     icon: 'ri-settings-4-line',
-    section: 'Cuenta'
+    section: 'Admin'
   },
   {
     id: '8',

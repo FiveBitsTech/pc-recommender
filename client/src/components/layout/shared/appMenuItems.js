@@ -6,13 +6,18 @@ export const perfilMenuItems = [
   { href: '/history', icon: 'ri-history-line', label: 'Mis cotizaciones' },
   { href: '/comparisons', icon: 'ri-scales-3-line', label: 'Comparaciones' },
   { href: '/builder', icon: 'ri-tools-line', label: 'Armador de PC' },
-  { href: '/favorites', icon: 'ri-heart-line', label: 'Favoritos' },
-  { href: '/settings', icon: 'ri-user-settings-line', label: 'Preferencias' }
+  { href: '/favorites', icon: 'ri-heart-line', label: 'Favoritos' }
 ]
 
-/** Solo admin — operaciones de plataforma */
+/** Solo admin — operaciones de plataforma (Ajustes al final) */
 export const panelMenuItems = [
-  { href: '/companies', icon: 'ri-store-2-line', label: 'Dominio - Empresas ' },
+  {
+    href: '/companies',
+    icon: 'ri-store-2-line',
+    label: 'Empresas',
+    suffix: { label: 'webs', color: 'error' }
+  },
   { href: '/scraping', icon: 'ri-radar-line', label: 'Scraping' },
-  { href: '/admin', icon: 'ri-settings-3-line', label: 'Administración' }
+  { href: '/admin', icon: 'ri-database-2-line', label: 'Administración' },
+  { href: '/settings', icon: 'ri-settings-3-line', label: 'Ajustes' }
 ]

@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common'
+import type { AdminPageParams } from '../../domain/admin-page'
 import {
   PRODUCT_REPOSITORY,
   type ProductRepository,
@@ -10,10 +11,10 @@ export class ListAdminPricesUseCase {
     @Inject(PRODUCT_REPOSITORY) private readonly productRepository: ProductRepository,
   ) {}
 
-  async execute() {
-    const rows = await this.productRepository.listAdminPrices()
+  async execute(params?: AdminPageParams) {
+    const result = await this.productRepository.listAdminPrices(params)
     return {
-      items: rows.map((r) => ({
+      items: result.items.map((r) => ({
         id: r.id,
         productId: r.productId,
         productName: r.productName,
@@ -24,6 +25,9 @@ export class ListAdminPricesUseCase {
         stockQty: r.stockQty,
         updatedAt: r.updatedAt,
       })),
+      total: result.total,
+      page: result.page,
+      pageSize: result.pageSize,
     }
   }
 }

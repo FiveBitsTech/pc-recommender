@@ -4,26 +4,35 @@ import { getAccessToken } from '@/utils/authSession'
 
 const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5300/api'
 
+const withListParams = (path, params = {}) => {
+  const search = new URLSearchParams()
+
+  if (params.q) search.set('q', params.q)
+  if (params.companyId) search.set('companyId', String(params.companyId))
+  if (params.page != null) search.set('page', String(params.page))
+  if (params.pageSize != null) search.set('pageSize', String(params.pageSize))
+
+  const qs = search.toString()
+
+  return `${path}${qs ? `?${qs}` : ''}`
+}
+
 export const adminCatalogApi = createApi({
   reducerPath: 'adminCatalogApi',
   baseQuery: fetchBaseQuery({
     baseUrl,
     prepareHeaders: headers => {
       const token = getAccessToken()
+
       if (token) headers.set('Authorization', `Bearer ${token}`)
+
       return headers
     }
   }),
   tagTypes: ['AdminProduct', 'AdminTag', 'AdminPrice', 'AdminSpec', 'AdminComparison', 'AdminRecommendation'],
   endpoints: builder => ({
     getAdminProducts: builder.query({
-      query: (params = {}) => {
-        const search = new URLSearchParams()
-        if (params.q) search.set('q', params.q)
-        if (params.companyId) search.set('companyId', String(params.companyId))
-        const qs = search.toString()
-        return `/products/admin${qs ? `?${qs}` : ''}`
-      },
+      query: (params = {}) => withListParams('/products/admin', params),
       providesTags: result =>
         result?.items
           ? [
@@ -34,7 +43,7 @@ export const adminCatalogApi = createApi({
     }),
     getAdminProduct: builder.query({
       query: id => `/products/admin/${id}`,
-      providesTags: (result, error, id) => [{ type: 'AdminProduct', id }]
+      providesTags: (_result, _error, id) => [{ type: 'AdminProduct', id }]
     }),
     updateAdminProduct: builder.mutation({
       query: ({ id, ...body }) => ({
@@ -42,7 +51,7 @@ export const adminCatalogApi = createApi({
         method: 'PATCH',
         body
       }),
-      invalidatesTags: (result, error, arg) => [
+      invalidatesTags: (_result, _error, arg) => [
         { type: 'AdminProduct', id: arg.id },
         { type: 'AdminProduct', id: 'LIST' },
         { type: 'AdminSpec', id: 'LIST' },
@@ -64,7 +73,7 @@ export const adminCatalogApi = createApi({
       ]
     }),
     getAdminTags: builder.query({
-      query: () => '/products/admin/tags',
+      query: (params = {}) => withListParams('/products/admin/tags', params),
       providesTags: [{ type: 'AdminTag', id: 'LIST' }]
     }),
     deleteAdminTag: builder.mutation({
@@ -72,18 +81,21 @@ export const adminCatalogApi = createApi({
         url: `/products/admin/tags/${id}`,
         method: 'DELETE'
       }),
-      invalidatesTags: [{ type: 'AdminTag', id: 'LIST' }, { type: 'AdminProduct', id: 'LIST' }]
+      invalidatesTags: [
+        { type: 'AdminTag', id: 'LIST' },
+        { type: 'AdminProduct', id: 'LIST' }
+      ]
     }),
     getAdminPrices: builder.query({
-      query: () => '/products/admin/prices',
+      query: (params = {}) => withListParams('/products/admin/prices', params),
       providesTags: [{ type: 'AdminPrice', id: 'LIST' }]
     }),
     getAdminSpecs: builder.query({
-      query: () => '/products/admin/specs',
+      query: (params = {}) => withListParams('/products/admin/specs', params),
       providesTags: [{ type: 'AdminSpec', id: 'LIST' }]
     }),
     getAdminComparisons: builder.query({
-      query: () => '/products/admin/comparisons',
+      query: (params = {}) => withListParams('/products/admin/comparisons', params),
       providesTags: [{ type: 'AdminComparison', id: 'LIST' }]
     }),
     deleteAdminComparison: builder.mutation({
@@ -94,7 +106,7 @@ export const adminCatalogApi = createApi({
       invalidatesTags: [{ type: 'AdminComparison', id: 'LIST' }]
     }),
     getAdminRecommendations: builder.query({
-      query: () => '/products/admin/recommendations',
+      query: (params = {}) => withListParams('/products/admin/recommendations', params),
       providesTags: [{ type: 'AdminRecommendation', id: 'LIST' }]
     }),
     deleteAdminRecommendation: builder.mutation({

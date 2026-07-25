@@ -1,4 +1,5 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common'
+import type { AdminPageParams } from '../../domain/admin-page'
 import {
   PRODUCT_REPOSITORY,
   type ProductRepository,
@@ -10,10 +11,10 @@ export class ListAdminRecommendationsUseCase {
     @Inject(PRODUCT_REPOSITORY) private readonly productRepository: ProductRepository,
   ) {}
 
-  async execute() {
-    const rows = await this.productRepository.listAdminRecommendations()
+  async execute(params?: AdminPageParams) {
+    const result = await this.productRepository.listAdminRecommendations(params)
     return {
-      items: rows.map((r) => ({
+      items: result.items.map((r) => ({
         id: r.id,
         productId: r.productId,
         productName: r.productName,
@@ -22,6 +23,9 @@ export class ListAdminRecommendationsUseCase {
         reason: r.reason,
         createdAt: r.createdAt,
       })),
+      total: result.total,
+      page: result.page,
+      pageSize: result.pageSize,
     }
   }
 }

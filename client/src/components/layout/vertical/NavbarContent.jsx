@@ -48,8 +48,8 @@ const shortcuts = [
   {
     url: '/settings',
     icon: 'ri-settings-4-line',
-    title: 'Preferencias',
-    subtitle: 'Tu cuenta'
+    title: 'Ajustes',
+    subtitle: 'Plataforma'
   }
 ]
 
