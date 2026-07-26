@@ -1,10 +1,16 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import dynamic from 'next/dynamic'
 
 import { useAuthUser } from '@/hooks/useAuthUser'
 import styles from './index.module.css'
+
+// Lazy load admin sub-views
+const ScrapingView = dynamic(() => import('@/views/scraping'), { ssr: false })
+const CompaniesView = dynamic(() => import('@/views/companies'), { ssr: false })
+const AdminCatalogView = dynamic(() => import('@/views/admin'), { ssr: false })
 
 const ADMIN_FEATURES = [
   {
@@ -12,21 +18,18 @@ const ADMIN_FEATURES = [
     icon: 'ri-radar-line',
     title: 'Scraping',
     description: 'Ejecutar y monitorear tareas de scraping de tiendas.',
-    href: '/scraping',
   },
   {
     id: 'companies',
     icon: 'ri-store-2-line',
     title: 'Empresas',
     description: 'Gestionar tiendas y fuentes de datos.',
-    href: '/companies',
   },
   {
     id: 'admin',
     icon: 'ri-database-2-line',
     title: 'Catálogo',
     description: 'Productos, precios, specs y más.',
-    href: '/admin',
   },
   {
     id: 'requirements',
@@ -51,15 +54,35 @@ const ADMIN_FEATURES = [
   },
 ]
 
+const INLINE_VIEWS = {
+  scraping: ScrapingView,
+  companies: CompaniesView,
+  admin: AdminCatalogView,
+}
+
 const AdminPanelPage = () => {
   const router = useRouter()
   const { ready, isAdmin, user, logout } = useAuthUser()
+  const [activeSection, setActiveSection] = useState(null)
 
   useEffect(() => {
     if (ready && !isAdmin) router.replace('/home')
   }, [ready, isAdmin, router])
 
   if (!ready || !isAdmin) return null
+
+  const handleCardClick = (feature) => {
+    // If it has an href, navigate externally
+    if (feature.href) {
+      router.push(feature.href)
+      return
+    }
+
+    // Toggle inline view
+    setActiveSection(activeSection === feature.id ? null : feature.id)
+  }
+
+  const ActiveView = activeSection ? INLINE_VIEWS[activeSection] : null
 
   return (
     <div className={styles.pageWrapper}>
@@ -92,8 +115,8 @@ const AdminPanelPage = () => {
               {ADMIN_FEATURES.map((feature) => (
                 <div
                   key={feature.id}
-                  className={styles.featureCard}
-                  onClick={() => router.push(feature.href)}
+                  className={`${styles.featureCard} ${activeSection === feature.id ? styles.featureCardActive : ''}`}
+                  onClick={() => handleCardClick(feature)}
                 >
                   <div className={styles.featureIconWrapper}>
                     <i className={feature.icon} />
@@ -102,10 +125,29 @@ const AdminPanelPage = () => {
                     <p className={styles.featureTitle}>{feature.title}</p>
                     <p className={styles.featureDescription}>{feature.description}</p>
                   </div>
-                  <i className='ri-arrow-right-s-line' style={{ color: '#3d95ee', fontSize: '1.25rem' }} />
+                  {feature.href ? (
+                    <i className='ri-external-link-line' style={{ color: '#3d95ee', fontSize: '1rem', opacity: 0.6 }} />
+                  ) : (
+                    <i className={activeSection === feature.id ? 'ri-arrow-up-s-line' : 'ri-arrow-right-s-line'} style={{ color: '#3d95ee', fontSize: '1.25rem' }} />
+                  )}
                 </div>
               ))}
             </div>
+
+            {/* Inline view container */}
+            {ActiveView && (
+              <div className={styles.inlineViewWrapper}>
+                <div className={styles.inlineViewHeader}>
+                  <button className={styles.closeViewButton} onClick={() => setActiveSection(null)}>
+                    <i className='ri-arrow-up-line' />
+                    <span>Cerrar {ADMIN_FEATURES.find(f => f.id === activeSection)?.title}</span>
+                  </button>
+                </div>
+                <div className={styles.inlineViewContent}>
+                  <ActiveView />
+                </div>
+              </div>
+            )}
 
             {/* Quick stats */}
             <div className={styles.quickInfo}>
