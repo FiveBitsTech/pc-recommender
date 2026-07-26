@@ -11,6 +11,7 @@ import styles from './index.module.css'
 const ScrapingView = dynamic(() => import('@/views/scraping'), { ssr: false })
 const CompaniesView = dynamic(() => import('@/views/companies'), { ssr: false })
 const AdminCatalogView = dynamic(() => import('@/views/admin'), { ssr: false })
+const SettingsView = dynamic(() => import('@/views/settings'), { ssr: false })
 
 const ADMIN_FEATURES = [
   {
@@ -50,7 +51,6 @@ const ADMIN_FEATURES = [
     icon: 'ri-settings-3-line',
     title: 'Ajustes',
     description: 'Configuración general de la plataforma.',
-    href: '/settings',
   },
 ]
 
@@ -58,6 +58,7 @@ const INLINE_VIEWS = {
   scraping: ScrapingView,
   companies: CompaniesView,
   admin: AdminCatalogView,
+  settings: SettingsView,
 }
 
 const AdminPanelPage = () => {
