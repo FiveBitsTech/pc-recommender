@@ -25,12 +25,9 @@ const PRODUCT_HREF_HINTS = [
   'products',
   '/p/',
   'item',
-  'laptop',
-  'computadora',
-  'pc-',
-  'notebook',
-  'componente',
-  'periferico',
+  '/dp/',
+  'ficha',
+  'detalle',
 ]
 
 const LISTING_HREF_HINTS = [
@@ -42,14 +39,42 @@ const LISTING_HREF_HINTS = [
   'tienda',
   'shop',
   'collection',
-  'laptop',
-  'computadora',
-  'notebook',
-  'componente',
-  'periferico',
-  'producto',
-  'products',
 ]
+
+// URLs that should NEVER be treated as product pages
+const CATEGORY_URL_PATTERNS = [
+  /\/categor/i,
+  /\/category/i,
+  /\/catalogo/i,
+  /\/catalogue/i,
+  /\/collection/i,
+  /\/tienda\//i,
+  /\/shop\/?$/i,
+  /\/tag\//i,
+  /\/marca\//i,
+  /\/brand\//i,
+  /\/ofertas?\//i,
+  /\/promocion/i,
+  /\/novedades/i,
+  /\/destacados/i,
+]
+
+// Heuristic: a URL that has a numeric ID + text likely is a product page
+const PRODUCT_URL_PATTERN = /\/\d{2,}-[a-z]/i
+
+const isLikelyProductUrl = (url: string): boolean => {
+  try {
+    const path = new URL(url).pathname.toLowerCase()
+    // Reject obvious category/listing URLs
+    if (CATEGORY_URL_PATTERNS.some(pattern => pattern.test(path))) return false
+    // Accept everything else — the listing phase already filtered with selectors/hints
+    return true
+  } catch {
+    return false
+  }
+}
+
+const MIN_VALID_PRICE_PEN = 50 // Minimum realistic price for tech products in soles
 
 const productLimitFromEnv = () => Number(process.env.SCRAPE_PRODUCT_LIMIT ?? 2000)
 
@@ -110,7 +135,18 @@ export class PlaywrightStoreProbe {
     const browser = await chromium.launch({ headless: true })
 
     try {
-      const page = await browser.newPage()
+      const page = await browser.newPage({
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+        viewport: { width: 1366, height: 768 },
+        locale: 'es-PE',
+      })
+
+      // Evade basic bot detection
+      await page.addInitScript(() => {
+        Object.defineProperty(navigator, 'webdriver', { get: () => false })
+        Object.defineProperty(navigator, 'languages', { get: () => ['es-PE', 'es', 'en'] })
+        Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] })
+      })
       report?.({ phase: 'listing', message: 'Explorando listados…' })
       const seeds: ListingTask[] = config.categories
         .filter(category => hostOf(category.url) === baseHost)
@@ -158,7 +194,9 @@ export class PlaywrightStoreProbe {
         this.logger.log(`Probe ${input.source}: heuristic crawl found=${origins.size}`)
       }
 
-      const productUrls = [...origins.keys()].slice(0, limit)
+      const productUrls = [...origins.keys()]
+        .filter(url => isLikelyProductUrl(url))
+        .slice(0, limit)
       this.logger.log(`Probe ${input.source}: products=${productUrls.length} (limit=${limit})`)
       report?.({ phase: 'products', visited: 0, total: productUrls.length })
 
@@ -177,14 +215,27 @@ export class PlaywrightStoreProbe {
         }
 
         if (item) {
-          products.push(item)
-          if (input.onProduct) {
-            try {
-              await input.onProduct(item)
-            } catch (error) {
-              const message = error instanceof Error ? error.message : String(error)
-              this.logger.warn(`Probe ingest failed url=${url}: ${message}`)
+          // Validate: must be a real product (not a category page)
+          const name = (item.product.name || '').trim()
+          const wordCount = name.split(/\s+/).length
+          const hasValidPrice = item.price.price >= MIN_VALID_PRICE_PEN
+          const hasSpecs = Object.values(item.specs ?? {}).filter(Boolean).length > 0
+
+          // A real product has: a descriptive name (5+ words), valid price, or at least specs
+          const isValidProduct = wordCount >= 4 && (hasValidPrice || hasSpecs)
+
+          if (isValidProduct) {
+            products.push(item)
+            if (input.onProduct) {
+              try {
+                await input.onProduct(item)
+              } catch (error) {
+                const message = error instanceof Error ? error.message : String(error)
+                this.logger.warn(`Probe ingest failed url=${url}: ${message}`)
+              }
             }
+          } else {
+            this.logger.debug(`Probe skip (invalid product): name="${name}" price=${item.price.price} words=${wordCount}`)
           }
         }
 
@@ -231,6 +282,13 @@ export class PlaywrightStoreProbe {
 
       try {
         await page.goto(task.url, { waitUntil: 'domcontentloaded', timeout: 60000 })
+
+        // Detect and wait for Cloudflare challenge
+        const listingTitle = await page.title()
+        if (/just a moment|cloudflare|attention required/i.test(listingTitle)) {
+          await page.waitForTimeout(6000)
+        }
+
         await this.settle(page, options.waitMs)
 
         const { selected, all } = await this.collectHrefs(page, options.productLinkSelector)
@@ -370,6 +428,27 @@ export class PlaywrightStoreProbe {
   ): Promise<ScrapedProductItem | null> {
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 })
 
+    // Wait a bit for JS rendering and potential anti-bot challenges
+    await page.waitForTimeout(1500)
+
+    // Detect if we got redirected to homepage or a different page
+    const currentUrl = page.url()
+    const currentPath = new URL(currentUrl).pathname
+    if (currentPath === '/' || currentPath === '/index.html' || currentPath === '/home') {
+      return null // Redirected to homepage, not a valid product
+    }
+
+    // Detect Cloudflare challenge page
+    const pageTitle = await page.title()
+    if (/just a moment|cloudflare|attention required/i.test(pageTitle)) {
+      // Wait for challenge to resolve
+      await page.waitForTimeout(5000)
+      const newTitle = await page.title()
+      if (/just a moment|cloudflare|attention required/i.test(newTitle)) {
+        return null // Still blocked by Cloudflare
+      }
+    }
+
     const extracted = await page.evaluate(selectors => {
       const text = (el: Element | null | undefined) => el?.textContent?.replace(/\s+/g, ' ').trim() || ''
 
@@ -389,11 +468,21 @@ export class PlaywrightStoreProbe {
         return value || null
       }
 
-      const title =
-        pick(selectors.name) ||
-        document.querySelector('h1')?.textContent?.trim() ||
-        document.querySelector('meta[property="og:title"]')?.getAttribute('content') ||
-        document.title
+      const title = (() => {
+        // Priority: config selector > itemprop name > h1 > og:title > document title
+        const candidates = [
+          pick(selectors.name),
+          document.querySelector('[itemprop="name"]')?.textContent?.trim(),
+          document.querySelector('h1')?.textContent?.trim(),
+          document.querySelector('h2[class*="product" i]')?.textContent?.trim(),
+          document.querySelector('meta[property="og:title"]')?.getAttribute('content'),
+          document.title,
+        ].filter(Boolean) as string[]
+
+        // Pick the first candidate that looks like a product name (not generic navigation)
+        const generic = /^(inicio|home|tienda|shop|bienvenido|welcome|error|404|página no encontrada)$/i
+        return candidates.find(c => c.length > 3 && !generic.test(c.trim())) || candidates[0] || ''
+      })()
 
       const configImage = query(selectors.image)
       const image =
@@ -497,7 +586,25 @@ export class PlaywrightStoreProbe {
       const metaBrand =
         document.querySelector('meta[property="product:brand"]')?.getAttribute('content') ||
         document.querySelector('meta[itemprop="brand"]')?.getAttribute('content') ||
-        null
+        (() => {
+          // Get brand from itemprop or manufacturer class, but only text content (no HTML)
+          const candidates = [
+            document.querySelector('[itemprop="brand"] [itemprop="name"]'),
+            document.querySelector('[itemprop="brand"]'),
+            document.querySelector('.manufacturer_name'),
+            document.querySelector('[class*="manufacturer" i]'),
+            document.querySelector('[class*="brand-name" i]'),
+          ]
+          for (const el of candidates) {
+            if (!el) continue
+            const val = el.textContent?.replace(/\s+/g, ' ').trim() || ''
+            // Must be short text, not HTML/script content
+            if (val && val.length <= 50 && !val.includes('<') && !/^(marca|brand):?\s*$/i.test(val)) {
+              return val.replace(/^.*:\s*/, '').trim() || null
+            }
+          }
+          return null
+        })()
 
       const attr = (selector: string, name: string) =>
         document.querySelector(selector)?.getAttribute(name) || null
@@ -505,29 +612,68 @@ export class PlaywrightStoreProbe {
       const priceCandidates: string[] = []
       const pushPrice = (value: string | null | undefined) => {
         const clean = (value ?? '').trim()
-        if (clean && /\d/.test(clean) && priceCandidates.length < 40) priceCandidates.push(clean)
+        if (!clean || !/\d/.test(clean) || priceCandidates.length >= 40) return
+        // Reject values that look like HTML/script content
+        if (clean.includes('<') || clean.length > 100) return
+        priceCandidates.push(clean)
+        // If text contains a PEN price like "(S/ 2.425,53)" or "S/. 8264.60", extract it separately
+        const penMatch = clean.match(/S\/\.?\s*([0-9][0-9.,]*[0-9])/)
+        if (penMatch && penMatch[0] !== clean) {
+          priceCandidates.push(penMatch[0])
+        }
       }
 
-      // Prioridad: datos estructurados > meta > selector del config > atributos > clases > texto.
+      // Priority 1: structured data (JSON-LD prices)
       jsonLdPrices.forEach(pushPrice)
+
+      // Priority 2: meta tags
       pushPrice(attr('meta[property="product:price:amount"]', 'content'))
       pushPrice(attr('meta[itemprop="price"]', 'content'))
-      pushPrice(attr('[itemprop="price"]', 'content'))
-      pushPrice(text(document.querySelector('[itemprop="price"]')))
-      pushPrice(pick(selectors.price))
-      pushPrice(attr('[data-price-amount]', 'data-price-amount'))
-      pushPrice(attr('[data-price]', 'data-price'))
 
-      document.querySelectorAll('[class*="price" i], [id*="price" i], [class*="precio" i]').forEach(el => {
+      // Priority 3: itemprop price ONLY within product context (not global)
+      const productContainer = document.querySelector('[itemtype*="Product"], [itemprop="offers"], .product-container, .product-detail, #product, [id*="product" i]')
+      const priceScope = productContainer || document.querySelector('main, [role="main"], .main-content, #content') || document.body
+      const scopedPriceEl = priceScope.querySelector('[itemprop="price"]')
+      if (scopedPriceEl) {
+        pushPrice(scopedPriceEl.getAttribute('content'))
+        pushPrice(text(scopedPriceEl))
+      }
+
+      // Priority 4: config selector
+      pushPrice(pick(selectors.price))
+
+      // Priority 5: data attributes within product scope
+      const scopedDataPrice = priceScope.querySelector('[data-price-amount], [data-price]')
+      if (scopedDataPrice) {
+        pushPrice(scopedDataPrice.getAttribute('data-price-amount') || scopedDataPrice.getAttribute('data-price'))
+      }
+
+      // Priority 6: price class elements ONLY within product scope (avoid sidebar/footer prices)
+      priceScope.querySelectorAll('[class*="price" i], [class*="precio" i]').forEach(el => {
+        // Skip elements in navigation, sidebar, footer, cart
+        const parent = el.closest('nav, footer, header, aside, [class*="sidebar" i], [class*="cart" i], [class*="related" i], [class*="similar" i]')
+        if (parent) return
         const value = text(el)
-        if (value && value.length <= 40 && /\d/.test(value)) pushPrice(value)
+        if (value && value.length <= 60 && /\d/.test(value)) pushPrice(value)
       })
 
-      const bodyPrices =
-        bodyText.match(
-          /(?:S\/\.?|US\$|PEN|USD|\$)\s*[0-9]{1,3}(?:[.,][0-9]{3})*(?:[.,][0-9]{2})?|[0-9]{1,3}(?:[.,][0-9]{3})*(?:[.,][0-9]{2})?\s*(?:soles|pen|dolares|usd)/gi,
+      // Priority 6b: find any visible element with S/ text (covers spans without price class)
+      priceScope.querySelectorAll('span, p, div, strong, b').forEach(el => {
+        const value = text(el)
+        if (value && /S\/\.?\s*[0-9]/.test(value) && value.length <= 80) {
+          // Only take the first S/ price found in this element (not child elements with $)
+          const match = value.match(/S\/\.?\s*[0-9][0-9.,]*[0-9]/)
+          if (match) pushPrice(match[0])
+        }
+      })
+
+      // Priority 7: regex prices from product scope text only (not entire body)
+      const scopeText = priceScope.textContent?.slice(0, 3000) || ''
+      const scopePrices =
+        scopeText.match(
+          /(?:S\/\.?|US\$|PEN|USD)\s*[0-9]{1,3}(?:[.,][0-9]{3})*(?:[.,][0-9]{2})?/gi,
         ) ?? []
-      bodyPrices.forEach(pushPrice)
+      scopePrices.slice(0, 5).forEach(pushPrice)
 
       const priceCurrency =
         jsonLdCurrency ||
@@ -548,6 +694,34 @@ export class PlaywrightStoreProbe {
         bodyText,
         priceCandidates,
         priceCurrency,
+        stockQty: (() => {
+          // Try to extract stock quantity from page
+          const stockEl = document.querySelector('[data-stock], [data-qty], [itemprop="inventoryLevel"], .stock-qty, .stock-count')
+          if (stockEl) {
+            const num = parseInt(stockEl.textContent?.replace(/\D/g, '') || stockEl.getAttribute('content') || '', 10)
+            if (Number.isFinite(num) && num >= 0) return num
+          }
+          // Check JSON-LD offers for stock
+          const scripts = document.querySelectorAll('script[type="application/ld+json"]')
+          for (const script of scripts) {
+            try {
+              const data = JSON.parse(script.textContent || '')
+              const offers = data?.offers || data?.['@graph']?.find((g: any) => g.offers)?.offers
+              if (offers) {
+                const offer = Array.isArray(offers) ? offers[0] : offers
+                if (offer?.inventoryLevel?.value != null) return Number(offer.inventoryLevel.value)
+              }
+            } catch {}
+          }
+          // Check availability text patterns
+          const availEl = document.querySelector('[class*="stock" i], [class*="disponib" i], [class*="availab" i]')
+          if (availEl) {
+            const text = availEl.textContent || ''
+            const match = text.match(/(\d+)\s*(?:unid|disponib|en stock|available)/i)
+            if (match) return parseInt(match[1], 10)
+          }
+          return null
+        })(),
       }
     }, config.product)
 
@@ -585,8 +759,8 @@ export class PlaywrightStoreProbe {
       price: {
         price,
         currency,
-        available: price > 0,
-        stockQty: null,
+        available: price > 1,
+        stockQty: extracted.stockQty ?? null,
         updatedAt: new Date().toISOString(),
       },
       specs,
@@ -597,7 +771,7 @@ export class PlaywrightStoreProbe {
 
   private confidenceOf(input: { price: number; category: string | null; specs: ScrapedSpecs }): number {
     const specsFilled = Object.values(input.specs).filter(Boolean).length
-    const score = 0.2 + (input.price > 0 ? 0.25 : 0) + (input.category ? 0.2 : 0) + Math.min(specsFilled, 3) * 0.1
+    const score = 0.2 + (input.price > 1 ? 0.25 : 0) + (input.category ? 0.2 : 0) + Math.min(specsFilled, 3) * 0.1
     return Number(score.toFixed(2))
   }
 }

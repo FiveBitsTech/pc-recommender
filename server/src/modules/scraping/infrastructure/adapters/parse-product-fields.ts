@@ -376,11 +376,42 @@ const currencyFromRaw = (raw: string): string | null => {
 
 export const detectPrice = (signals: ProductSignals): { price: number; currency: string } => {
   const declared = normalizeCurrency(signals.priceCurrency)
+
+  // First pass: look for explicit PEN/soles prices (highest priority)
   for (const raw of signals.priceCandidates) {
-    const value = parseMoney(raw)
-    if (value > 0) {
-      return { price: value, currency: declared ?? currencyFromRaw(raw) ?? 'PEN' }
+    if (/S\/|soles|\bpen\b/i.test(raw)) {
+      // Isolate the soles portion: split on "o $", "o$", "/ $", or just "$" to remove USD part
+      const solePart = raw.split(/\s*o\s*\$|\s*\/\s*\$|\s*\$\s*[0-9]/i)[0]
+      // Remove the S/. prefix and parse the remaining number
+      const numericPart = solePart.replace(/.*S\/\.?\s*/i, '').replace(/.*soles\s*/i, '').replace(/.*pen\s*/i, '').trim()
+      if (numericPart) {
+        const value = parseMoney(numericPart)
+        if (value > 1) {
+          return { price: value, currency: 'PEN' }
+        }
+      }
     }
   }
+
+  // Second pass: collect all valid prices and pick the best one
+  // For tech products, the real price is usually the highest non-extreme value
+  let bestPrice = 0
+  let bestCurrency = declared ?? 'PEN'
+  for (const raw of signals.priceCandidates) {
+    // Skip candidates that contain both $ and S/ (mixed currency strings)
+    if (/\$/.test(raw) && /S\//.test(raw)) continue
+    // Skip candidates that are USD-only
+    if (/us\$|usd|\$/.test(raw) && !/S\//.test(raw)) continue
+    const value = parseMoney(raw)
+    if (value > bestPrice && value < 500000) {
+      bestPrice = value
+      bestCurrency = declared ?? currencyFromRaw(raw) ?? 'PEN'
+    }
+  }
+
+  if (bestPrice > 1) {
+    return { price: bestPrice, currency: bestCurrency }
+  }
+
   return { price: 0, currency: declared ?? 'PEN' }
 }
