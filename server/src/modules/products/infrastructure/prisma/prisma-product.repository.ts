@@ -45,10 +45,12 @@ export class PrismaProductRepository implements ProductRepository {
     const products = await this.prisma.product.findMany({
       orderBy: { id: 'desc' },
       include: {
+        company: { select: { id: true, name: true, logoUrl: true } },
         specs: true,
         prices: { orderBy: { updatedAt: 'desc' }, take: 1 },
       },
     })
+
     return products.map((p) => this.toListItem(p))
   }
 
@@ -56,10 +58,12 @@ export class PrismaProductRepository implements ProductRepository {
     const product = await this.prisma.product.findUnique({
       where: { id },
       include: {
+        company: { select: { id: true, name: true, logoUrl: true } },
         specs: true,
         prices: { orderBy: { updatedAt: 'desc' }, take: 1 },
       },
     })
+
     return product ? this.toListItem(product) : null
   }
 
@@ -441,6 +445,7 @@ export class PrismaProductRepository implements ProductRepository {
     category: string | null
     productUrl: string | null
     imageUrl: string | null
+    company?: { id?: number; name: string; logoUrl?: string | null } | null
     specs: {
       processor: string | null
       gpu: string | null
