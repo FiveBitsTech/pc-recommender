@@ -378,7 +378,8 @@ export const detectPrice = (signals: ProductSignals): { price: number; currency:
   const declared = normalizeCurrency(signals.priceCurrency)
   for (const raw of signals.priceCandidates) {
     const value = parseMoney(raw)
-    if (value > 0) {
+    // Skip values <= 1 — these are flags/booleans, not real prices
+    if (value > 1) {
       return { price: value, currency: declared ?? currencyFromRaw(raw) ?? 'PEN' }
     }
   }

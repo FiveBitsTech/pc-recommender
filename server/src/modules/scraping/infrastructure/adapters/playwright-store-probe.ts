@@ -548,6 +548,34 @@ export class PlaywrightStoreProbe {
         bodyText,
         priceCandidates,
         priceCurrency,
+        stockQty: (() => {
+          // Try to extract stock quantity from page
+          const stockEl = document.querySelector('[data-stock], [data-qty], [itemprop="inventoryLevel"], .stock-qty, .stock-count')
+          if (stockEl) {
+            const num = parseInt(stockEl.textContent?.replace(/\D/g, '') || stockEl.getAttribute('content') || '', 10)
+            if (Number.isFinite(num) && num >= 0) return num
+          }
+          // Check JSON-LD offers for stock
+          const scripts = document.querySelectorAll('script[type="application/ld+json"]')
+          for (const script of scripts) {
+            try {
+              const data = JSON.parse(script.textContent || '')
+              const offers = data?.offers || data?.['@graph']?.find((g: any) => g.offers)?.offers
+              if (offers) {
+                const offer = Array.isArray(offers) ? offers[0] : offers
+                if (offer?.inventoryLevel?.value != null) return Number(offer.inventoryLevel.value)
+              }
+            } catch {}
+          }
+          // Check availability text patterns
+          const availEl = document.querySelector('[class*="stock" i], [class*="disponib" i], [class*="availab" i]')
+          if (availEl) {
+            const text = availEl.textContent || ''
+            const match = text.match(/(\d+)\s*(?:unid|disponib|en stock|available)/i)
+            if (match) return parseInt(match[1], 10)
+          }
+          return null
+        })(),
       }
     }, config.product)
 
@@ -585,8 +613,8 @@ export class PlaywrightStoreProbe {
       price: {
         price,
         currency,
-        available: price > 0,
-        stockQty: null,
+        available: price > 1,
+        stockQty: extracted.stockQty ?? null,
         updatedAt: new Date().toISOString(),
       },
       specs,
@@ -597,7 +625,7 @@ export class PlaywrightStoreProbe {
 
   private confidenceOf(input: { price: number; category: string | null; specs: ScrapedSpecs }): number {
     const specsFilled = Object.values(input.specs).filter(Boolean).length
-    const score = 0.2 + (input.price > 0 ? 0.25 : 0) + (input.category ? 0.2 : 0) + Math.min(specsFilled, 3) * 0.1
+    const score = 0.2 + (input.price > 1 ? 0.25 : 0) + (input.category ? 0.2 : 0) + Math.min(specsFilled, 3) * 0.1
     return Number(score.toFixed(2))
   }
 }

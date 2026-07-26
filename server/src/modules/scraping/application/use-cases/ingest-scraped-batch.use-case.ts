@@ -31,6 +31,9 @@ export class IngestScrapedBatchUseCase {
     const productUrl = item.product.productUrl
     if (!productUrl) return false
 
+    // Skip products with invalid prices (0 or 1 are not real prices)
+    if (!item.price.price || item.price.price <= 1) return false
+
     const flat = projectSpecsToFlat(item.specs)
     const priceUpdatedAt = new Date(item.price.updatedAt || fallbackDate || Date.now())
 
