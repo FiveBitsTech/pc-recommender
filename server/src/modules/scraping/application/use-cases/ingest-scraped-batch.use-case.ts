@@ -3,6 +3,8 @@ import { PrismaService } from '../../../../shared/prisma/prisma.service'
 import type { ScrapedBatch, ScrapedCompany, ScrapedProductItem } from '../../domain/ports/store-scraper.port'
 import { normalizeTagName, projectSpecsToFlat } from '../mappers/project-specs'
 
+const USD_TO_PEN = Number(process.env.USD_TO_PEN) || 3.75
+
 @Injectable()
 export class IngestScrapedBatchUseCase {
   constructor(private readonly prisma: PrismaService) {}
@@ -33,6 +35,15 @@ export class IngestScrapedBatchUseCase {
 
     // Skip products with invalid prices (0 or 1 are not real prices)
     if (!item.price.price || item.price.price <= 1) return false
+
+    // Convert USD to PEN so all prices are stored in soles
+    let finalPrice = item.price.price
+    let finalCurrency = item.price.currency
+
+    if (finalCurrency === 'USD') {
+      finalPrice = Number((finalPrice * USD_TO_PEN).toFixed(2))
+      finalCurrency = 'PEN'
+    }
 
     const flat = projectSpecsToFlat(item.specs)
     const priceUpdatedAt = new Date(item.price.updatedAt || fallbackDate || Date.now())
@@ -71,8 +82,8 @@ export class IngestScrapedBatchUseCase {
       await tx.productPrice.create({
         data: {
           productId: product.id,
-          price: item.price.price,
-          currency: item.price.currency || 'PEN',
+          price: finalPrice,
+          currency: finalCurrency,
           available: item.price.available ?? true,
           stockQty: item.price.stockQty ?? null,
           updatedAt: priceUpdatedAt,
