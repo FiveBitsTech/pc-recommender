@@ -95,7 +95,7 @@ CONOCIMIENTO TÉCNICO DE PROCESADORES Y GRÁFICOS:
     1. Selecciona exactamente 3 productos (o menos si no hay suficientes).
     2. Ordénalos de menor a mayor precio (económica, recomendada, mejor opción).
     3. Evalúa cada uno con un score de 1 a 10 basado en qué tan bien se ajusta al perfil.
-    4. Explica por qué recomiendas cada uno en español, máximo 2 oraciones claras.
+    4. Explica por qué recomiendas cada uno en español, máximo 2 oraciones claras. El reason DEBE ser 100% positivo — solo menciona por qué es buena opción para el usuario. NO incluyas comparaciones negativas ni desventajas en el reason, esas van en el campo disadvantages.
     5. Lista ventajas técnicas (máximo 3).
     6. Lista desventajas o puntos débiles (máximo 3).
     7. Lista limitaciones técnicas a futuro — cosas como máxima RAM soportada, slots disponibles, compatibilidad de upgrades, limitaciones del socket o chipset (máximo 3).
@@ -145,72 +145,70 @@ CONOCIMIENTO TÉCNICO DE PROCESADORES Y GRÁFICOS:
     brandPreference?: string | null
     availableComponents?: Array<{ id: number; name: string; brand: string | null; category: string | null; price: number; companyId: number }>
   }): Promise<{
-    components: Array<{
-      category: string
-      name: string
-      brand: string
-      price: number
-      reason: string
-    }>
+    components: Array<{ category: string; name: string; brand: string; price: number; tier: string; reason: string }>
     totalPrice: number
-    compatibility: string[]
-    explanation: string
+    summary: { level: string; compatibilityScore: number; whyThisConfig: string[] }
+    compatibility: Array<{ check: string; status: string }>
+    warnings: string[]
+    performance: { ratings: Array<{ category: string; score: number }>; capabilities: string[] }
+    powerConsumption: { estimated: number; recommended: number; margin: number }
     futureUpgrades: string[]
+    explanation: string
   } | null> {
     const { usageType, budget, brandPreference, availableComponents } = params
 
-    const brandNote = brandPreference
+    const brandNote = brandPreference && brandPreference !== 'sin preferencia'
       ? `\n- Preferencia de procesador: ${brandPreference}`
       : ''
 
     const inventorySection = availableComponents && availableComponents.length > 0
-      ? `\nCOMPONENTES DISPONIBLES EN INVENTARIO (usa estos si son compatibles y encajan en el presupuesto):
-${availableComponents.map((c) => `- ID:${c.id} | ${c.name} | ${c.brand} | ${c.category} | S/${c.price}`).join('\n')}
+      ? `\nCOMPONENTES DISPONIBLES EN INVENTARIO (prioriza estos):
+${availableComponents.map((c) => `- ID:${c.id} | ${c.name} | ${c.brand} | ${c.category} | S/${c.price}`).join('\n')}`
+      : ''
 
-IMPORTANTE: Prioriza componentes del inventario real. Si no hay un componente adecuado en inventario, sugiere uno del mercado general con precio estimado.`
-      : '\nNOTA: No hay componentes en inventario. Sugiere componentes del mercado peruano con precios estimados 2025.'
+    const prompt = `Eres un experto armador de PCs para el mercado peruano. Genera una configuración completa con análisis detallado.
 
-    const prompt = `Eres un experto armador de PCs para el mercado peruano. Genera una configuración completa de PC con componentes compatibles entre sí.
+REGLAS CRÍTICAS:
+- Si el CPU no tiene gráficos integrados (termina en F, ej: i5-13600KF), DEBES incluir GPU dedicada obligatoriamente. Esto es un error grave si no se detecta.
+- RAM mínimo 16GB en Dual Channel (2 sticks).
+- SSD NVMe obligatorio.
+- Fuente 80+ con al menos 100W de margen.
+- Todos los componentes deben ser compatibles (socket, chipset, tipo RAM, factor forma).
+- Explica TODO en lenguaje sencillo, como si hablaras con alguien que no sabe de hardware.
 
-ESTÁNDARES OBLIGATORIOS:
-- RAM: mínimo 16GB para cualquier uso. SIEMPRE recomendar en Dual Channel (2 sticks) para mejor rendimiento. Ejemplo: 2x8GB o 2x16GB.
-- SSD NVMe obligatorio como disco principal.
-- Fuente de poder con certificación 80+ mínimo, con al menos 100W de margen sobre el consumo estimado.
-- Todos los componentes deben ser compatibles (socket, chipset, tipo de RAM, factor de forma).
-- Intel tiene mejor single-core (gaming). AMD Ryzen mejor multi-core (productividad).
-- Indicar la GAMA de cada componente (entrada, media, alta, entusiasta) en la razón.
-- Para RAM: siempre mencionar si es Dual Channel, la frecuencia, y la latencia si es relevante.
-
-PERFIL DEL USUARIO:
-- Uso principal: ${usageType}
-- Presupuesto total: S/ ${budget}${brandNote}
+PERFIL:
+- Uso: ${usageType}
+- Presupuesto: S/ ${budget}${brandNote}
 ${inventorySection}
-
-INSTRUCCIONES:
-1. Selecciona componentes que sean compatibles entre sí.
-2. El total NO debe superar el presupuesto (puede ser menor).
-3. Los precios deben ser realistas para el mercado peruano 2025.
-4. Incluye: CPU, Placa madre, RAM, GPU (si aplica), SSD, Fuente, Case.
-5. En "reason" de cada componente: indica la GAMA (entrada/media/alta/entusiasta), por qué lo elegiste, y detalles técnicos relevantes (Dual Channel para RAM, certificación para fuente, chipset para placa, etc.).
-6. Valida compatibilidad (socket, chipset, tipo RAM, factor forma, consumo eléctrico).
-7. Sugiere upgrades futuros.
-8. En compatibility incluir: validación de Dual Channel, socket correcto, chipset compatible, fuente suficiente, case compatible con placa.
 
 Responde SOLO en JSON (sin markdown):
 {
   "components": [
-    { "category": "Procesador", "name": "<modelo>", "brand": "<marca>", "price": <number>, "tier": "<entrada|media|alta|entusiasta>", "reason": "<por qué, incluyendo gama y detalles técnicos>" },
-    { "category": "Placa Madre", "name": "<modelo>", "brand": "<marca>", "price": <number>, "tier": "<entrada|media|alta|entusiasta>", "reason": "<chipset, socket, features>" },
-    { "category": "Memoria RAM", "name": "<modelo>", "brand": "<marca>", "price": <number>, "tier": "<entrada|media|alta|entusiasta>", "reason": "<capacidad, Dual Channel, frecuencia, latencia>" },
-    { "category": "Tarjeta Gráfica", "name": "<modelo>", "brand": "<marca>", "price": <number>, "tier": "<entrada|media|alta|entusiasta>", "reason": "<VRAM, rendimiento esperado>" },
-    { "category": "Almacenamiento", "name": "<modelo>", "brand": "<marca>", "price": <number>, "tier": "<entrada|media|alta|entusiasta>", "reason": "<velocidad, interfaz>" },
-    { "category": "Fuente de Poder", "name": "<modelo>", "brand": "<marca>", "price": <number>, "tier": "<entrada|media|alta|entusiasta>", "reason": "<watts, certificación, margen>" },
-    { "category": "Case", "name": "<modelo>", "brand": "<marca>", "price": <number>, "tier": "<entrada|media|alta|entusiasta>", "reason": "<factor forma, airflow>" }
+    { "category": "Procesador", "name": "<modelo>", "brand": "<marca>", "price": <number>, "tier": "<entrada|media|alta|entusiasta>", "reason": "<explicación simple de por qué este componente>" }
   ],
   "totalPrice": <number>,
-  "compatibility": ["<check de compatibilidad 1>", "<check 2>", ...],
-  "explanation": "<resumen de 2-3 oraciones de por qué esta configuración es ideal>",
-  "futureUpgrades": ["<upgrade 1>", "<upgrade 2>", ...]
+  "summary": {
+    "level": "<Gama entrada|media|alta|entusiasta>",
+    "compatibilityScore": <80-100>,
+    "whyThisConfig": ["<razón simple 1>", "<razón simple 2>", "<razón simple 3>"]
+  },
+  "compatibility": [
+    { "check": "<qué se validó>", "status": "ok|warning|error" }
+  ],
+  "warnings": ["<advertencia importante si la hay, ej: requiere GPU dedicada>"],
+  "performance": {
+    "ratings": [
+      { "category": "<uso>", "score": <1-5> }
+    ],
+    "capabilities": ["<qué podrás hacer con esta PC, lenguaje simple>"]
+  },
+  "powerConsumption": {
+    "estimated": <watts consumo>,
+    "recommended": <watts fuente>,
+    "margin": <watts disponibles>
+  },
+  "futureUpgrades": ["<mejora posible>"],
+  "explanation": "<resumen de 2 oraciones de por qué esta config es ideal>"
 }`
 
     try {
@@ -218,7 +216,7 @@ Responde SOLO en JSON (sin markdown):
         model: 'gpt-4o-mini',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.3,
-        max_tokens: 1500,
+        max_tokens: 2000,
       })
 
       const content = response.choices[0]?.message?.content?.trim() ?? '{}'
@@ -235,46 +233,75 @@ Responde SOLO en JSON (sin markdown):
   async generateComparison(params: {
     product1: ProductForAI
     product2: ProductForAI
+    product3?: ProductForAI
+    usageContext?: string
   }): Promise<{
-    analysis: string
-    winner: string
-    specs_comparison: Array<{ category: string; product1: string; product2: string; winner: string }>
+    recommendation: { productName: string; score: number; keyReasons: string[]; tradeoffs: string[] }
+    summary: Array<{ useCase: string; icon: string; bestProduct: string }>
+    specs_comparison: Array<{ category: string; product1: string; product2: string; product3?: string; winner: string }>
+    ratings: Array<{ category: string; product1Score: number; product2Score: number; product3Score?: number }>
   } | null> {
-    const { product1, product2 } = params
+    const { product1, product2, product3, usageContext } = params
 
     const formatProduct = (p: ProductForAI) =>
       `${p.name} | ${p.brand} | S/${p.price} | CPU: ${p.specs?.processor ?? 'N/A'} | GPU: ${p.specs?.gpu ?? 'N/A'} | RAM: ${p.specs?.ram ?? 'N/A'} | Disco: ${p.specs?.storage ?? 'N/A'} | Pantalla: ${p.specs?.screen ?? 'N/A'}`
 
-    const prompt = `Eres un experto en hardware. Compara estos 2 equipos de forma técnica y objetiva en español.
+    const usageNote = usageContext ? `\nEl usuario busca un equipo para: ${usageContext}` : ''
 
-      PRODUCTO 1: ${formatProduct(product1)}
-      PRODUCTO 2: ${formatProduct(product2)}
+    const productCount = product3 ? 3 : 2
+    const productsText = product3
+      ? `PRODUCTO 1: ${formatProduct(product1)}\nPRODUCTO 2: ${formatProduct(product2)}\nPRODUCTO 3: ${formatProduct(product3)}`
+      : `PRODUCTO 1: ${formatProduct(product1)}\nPRODUCTO 2: ${formatProduct(product2)}`
 
-      INSTRUCCIONES:
-      1. Genera un análisis comparativo detallado (3-5 oraciones) explicando cuál es mejor y por qué según diferentes escenarios de uso.
-      2. Indica un ganador general (o "empate" si son muy similares). Usa el nombre del producto.
-      3. Compara las especificaciones por categoría indicando cuál es mejor en cada una.
+    const specsFormat = product3
+      ? '{ "category": "<spec>", "product1": "<spec>", "product2": "<spec>", "product3": "<spec>", "winner": "product1|product2|product3|empate" }'
+      : '{ "category": "<spec>", "product1": "<spec>", "product2": "<spec>", "winner": "product1|product2|empate" }'
 
-      Responde SOLO en JSON con este formato exacto (sin markdown ni texto extra):
-      {
-        "analysis": "<string>",
-        "winner": "<nombre del producto ganador o 'Empate'>",
-        "specs_comparison": [
-          { "category": "Procesador", "product1": "<spec>", "product2": "<spec>", "winner": "product1|product2|empate" },
-          { "category": "Gráficos", "product1": "<spec>", "product2": "<spec>", "winner": "product1|product2|empate" },
-          { "category": "RAM", "product1": "<spec>", "product2": "<spec>", "winner": "product1|product2|empate" },
-          { "category": "Almacenamiento", "product1": "<spec>", "product2": "<spec>", "winner": "product1|product2|empate" },
-          { "category": "Pantalla", "product1": "<spec>", "product2": "<spec>", "winner": "product1|product2|empate" },
-          { "category": "Precio", "product1": "S/<precio>", "product2": "S/<precio>", "winner": "product1|product2|empate" }
-        ]
-      }`
+    const ratingsFormat = product3
+      ? '{ "category": "<cat>", "product1Score": <1-5>, "product2Score": <1-5>, "product3Score": <1-5> }'
+      : '{ "category": "<cat>", "product1Score": <1-5>, "product2Score": <1-5> }'
+
+    const prompt = `Eres un experto en hardware para el mercado peruano. Compara estos ${productCount} equipos de forma clara y visual.${usageNote}
+
+${productsText}
+
+INSTRUCCIONES:
+1. Da una recomendación contextual. NO uses la palabra "Ganador". Usa "Nuestra recomendación" o "La mejor opción según tu perfil".
+2. Da 3 razones clave en bullets cortos de por qué recomiendas ese producto.
+3. Menciona 1-2 cosas que sacrificas al elegir esa opción.
+4. Genera un resumen rápido: para cada tipo de uso (Gaming, Productividad, Calidad-precio), indica cuál de los ${productCount} productos es mejor.
+5. Compara specs de los ${productCount} productos con indicador de cuál gana.
+6. Puntúa cada producto del 1 al 5 en: Gaming, Productividad, Portabilidad, Relación precio/rendimiento.
+
+Responde SOLO en JSON (sin markdown):
+{
+  "recommendation": {
+    "productName": "<nombre del producto recomendado>",
+    "score": <número 1-100>,
+    "keyReasons": ["<razón corta 1>", "<razón corta 2>", "<razón corta 3>"],
+    "tradeoffs": ["<lo que sacrificas 1>", "<lo que sacrificas 2>"]
+  },
+  "summary": [
+    { "useCase": "Gaming", "icon": "🎮", "bestProduct": "<nombre>" },
+    { "useCase": "Productividad", "icon": "💼", "bestProduct": "<nombre>" },
+    { "useCase": "Calidad-precio", "icon": "💰", "bestProduct": "<nombre>" }
+  ],
+  "specs_comparison": [
+    ${specsFormat},
+    ...
+  ],
+  "ratings": [
+    ${ratingsFormat},
+    ...
+  ]
+}`
 
     try {
       const response = await this.client.chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.3,
-        max_tokens: 1000,
+        max_tokens: 1500,
       })
 
       const content = response.choices[0]?.message?.content?.trim() ?? '{}'

@@ -9,6 +9,7 @@ export type ProductListItem = {
   category: string | null
   productUrl: string | null
   imageUrl: string | null
+  company: { id: number; name: string; logoUrl: string | null } | null
   specs: {
     processor: string | null
     gpu: string | null
@@ -26,6 +27,7 @@ export type ProductListItem = {
 
 export type ProductFilterParams = {
   category: string
+  minPrice?: number
   maxPrice: number
   limit?: number
 }

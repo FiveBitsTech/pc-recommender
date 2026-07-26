@@ -31,6 +31,7 @@ export class PrismaRequirementRepository implements RequirementRepository {
       data: {
         usageType: input.usageType,
         budget: input.budget,
+        budgetMin: input.budgetMin ?? null,
         priority: input.priority,
         deviceType: input.deviceType,
         brandPreference: input.brandPreference ?? null,
