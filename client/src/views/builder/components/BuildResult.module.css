@@ -57,7 +57,7 @@
 .componentRight { text-align: right; display: flex; flex-direction: column; gap: 2px; }
 .componentPrice { font-size: 14px; font-weight: 700; color: #007afb; }
 .componentSource { font-size: 10px; color: #2e7d32; display: block; }
-.totalRow { display: flex; justify-content: space-between; padding: 14px 16px; background: rgba(138,141,147,0.08); font-weight: 700; font-size: 16px; border-top: 1px solid #e0e0e0; }
+.totalRow { display: flex; justify-content: space-between; padding: 14px 16px; background: rgba(138,141,147,0.08); font-weight: 700; font-size: 16px; color: rgba(46, 38, 61, 0.9); border-top: 1px solid #e0e0e0; }
 
 .powerGrid { display: flex; gap: 16px; }
 .powerItem { display: flex; flex-direction: column; align-items: center; padding: 12px 20px; background: #f7f9fc; border-radius: 10px; flex: 1; }

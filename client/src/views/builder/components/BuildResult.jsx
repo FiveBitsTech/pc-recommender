@@ -157,9 +157,9 @@ const BuildResult = ({ result }) => {
               <div className={styles.componentMiddle}>
                 <p className={styles.componentName}>{comp.name}</p>
                 <p className={styles.componentReason}>{comp.reason}</p>
-                {comp.companyName && (
+                {(comp.companyName || comp.source === 'database') && (
                   <p className={styles.componentCompany}>
-                    <i className='ri-store-2-line' /> {comp.companyName}
+                    <i className='ri-store-2-line' /> {comp.companyName || 'Tienda verificada'}
                     {comp.productUrl && (
                       <a href={comp.productUrl} target='_blank' rel='noopener noreferrer' className={styles.componentLink}>
                         Ver producto <i className='ri-external-link-line' />
