@@ -8,6 +8,11 @@ export class CreateRequirementDto {
   @Min(0)
   budget!: number
 
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  budgetMin?: number
+
   @IsString()
   priority!: string
 

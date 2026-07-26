@@ -79,8 +79,8 @@ export class BuildPCUseCase {
           ...comp,
           price: Number(match.latestPrice?.price ?? comp.price),
           productId: match.id,
-          companyId: match.companyId,
-          productUrl: null, // Will be enriched if needed
+          companyName: match.company?.name ?? null,
+          productUrl: match.productUrl ?? null,
           source: 'database' as const,
         }
       }
@@ -88,7 +88,7 @@ export class BuildPCUseCase {
       return {
         ...comp,
         productId: null,
-        companyId: null,
+        companyName: null,
         productUrl: null,
         source: 'estimated' as const,
       }

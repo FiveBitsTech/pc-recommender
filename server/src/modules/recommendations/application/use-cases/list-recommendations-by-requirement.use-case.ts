@@ -43,9 +43,25 @@ export class ListRecommendationsByRequirementUseCase {
 
     const budget = Number(requirement.budget)
 
+    // Minimum price: use budgetMin if provided, otherwise use rules by usage type
+    const MIN_PRICE_BY_USAGE: Record<string, number> = {
+      gaming: 2500,
+      'diseño gráfico': 2500,
+      streaming: 2500,
+      programación: 2000,
+      profesional: 3000,
+      oficina: 1000,
+      estudio: 1000,
+    }
+
+    const minPrice = requirement.budgetMin
+      ? Number(requirement.budgetMin)
+      : (MIN_PRICE_BY_USAGE[requirement.usageType] ?? budget * 0.5)
+
     const products = await this.productRepository.findByFilters({
       category: requirement.deviceType,
-      maxPrice: budget * 1.2,
+      minPrice,
+      maxPrice: budget * 1.1,
       limit: 8,
     })
 
@@ -110,7 +126,7 @@ export class ListRecommendationsByRequirementUseCase {
             category: product.category,
             productUrl: product.productUrl,
             imageUrl: product.imageUrl,
-            company: null,
+            company: product.company ?? null,
             specs: product.specs,
             price: Number(product.latestPrice?.price ?? 0),
           },

@@ -44,16 +44,26 @@ export class PrismaProductRepository implements ProductRepository {
   async findAll(): Promise<ProductListItem[]> {
     const products = await this.prisma.product.findMany({
       orderBy: { id: 'desc' },
-      include: listInclude,
+      include: {
+        company: { select: { id: true, name: true, logoUrl: true } },
+        specs: true,
+        prices: { orderBy: { updatedAt: 'desc' }, take: 1 },
+      },
     })
+
     return products.map((p) => this.toListItem(p))
   }
 
   async findById(id: number): Promise<ProductListItem | null> {
     const product = await this.prisma.product.findUnique({
       where: { id },
-      include: listInclude,
+      include: {
+        company: { select: { id: true, name: true, logoUrl: true } },
+        specs: true,
+        prices: { orderBy: { updatedAt: 'desc' }, take: 1 },
+      },
     })
+
     return product ? this.toListItem(product) : null
   }
 
@@ -61,11 +71,18 @@ export class PrismaProductRepository implements ProductRepository {
     const products = await this.prisma.product.findMany({
       where: {
         category: filters.category,
-        prices: { some: { price: { lte: filters.maxPrice } } },
+        prices: {
+          some: {
+            price: { lte: filters.maxPrice },
+          },
+        },
       },
       orderBy: { id: 'desc' },
       take: filters.limit ?? 5,
-      include: listInclude,
+      include: {
+        specs: true,
+        prices: { orderBy: { updatedAt: 'desc' }, take: 1 },
+      },
     })
     return products.map((p) => this.toListItem(p))
   }
@@ -428,7 +445,15 @@ export class PrismaProductRepository implements ProductRepository {
     category: string | null
     productUrl: string | null
     imageUrl: string | null
-    specs: ProductListItem['specs']
+    company?: { id?: number; name: string; logoUrl?: string | null } | null
+    specs: {
+      processor: string | null
+      gpu: string | null
+      ram: string | null
+      storage: string | null
+      screen: string | null
+      operatingSystem: string | null
+    } | null
     prices: Array<{ price: { toString(): string }; currency: string; updatedAt: Date }>
   }): ProductListItem {
     return {
@@ -440,6 +465,7 @@ export class PrismaProductRepository implements ProductRepository {
       category: product.category,
       productUrl: product.productUrl,
       imageUrl: product.imageUrl,
+      company: product.company ?? null,
       specs: product.specs,
       latestPrice: product.prices[0] ?? null,
     }

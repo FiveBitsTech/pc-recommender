@@ -4,6 +4,7 @@ export type RequirementRecord = {
   id: number
   usageType: string
   budget: { toString(): string }
+  budgetMin: { toString(): string } | null
   priority: string
   deviceType: string
   brandPreference: string | null
@@ -13,6 +14,7 @@ export type RequirementRecord = {
 export type CreateRequirementInput = {
   usageType: string
   budget: number
+  budgetMin?: number | null
   priority: string
   deviceType: string
   brandPreference?: string | null

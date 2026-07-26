@@ -1,11 +1,9 @@
-import { IsInt, Min } from 'class-validator'
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsInt } from 'class-validator'
 
 export class CompareProductsDto {
-  @IsInt()
-  @Min(1)
-  productOneId!: number
-
-  @IsInt()
-  @Min(1)
-  productTwoId!: number
+  @IsArray()
+  @ArrayMinSize(2)
+  @ArrayMaxSize(3)
+  @IsInt({ each: true })
+  productIds!: number[]
 }

@@ -3,10 +3,6 @@ import {
   PRODUCT_REPOSITORY,
   type ProductRepository,
 } from '../../../products/domain/repositories/product.repository'
-import {
-  COMPARISON_REPOSITORY,
-  type ComparisonRepository,
-} from '../../domain/repositories/comparison.repository'
 import { OpenAIService } from '../../../../shared/openai/openai.service'
 
 @Injectable()
@@ -14,70 +10,54 @@ export class CompareProductsUseCase {
   constructor(
     @Inject(PRODUCT_REPOSITORY)
     private readonly productRepository: ProductRepository,
-    @Inject(COMPARISON_REPOSITORY)
-    private readonly comparisonRepository: ComparisonRepository,
     private readonly openAIService: OpenAIService,
   ) {}
 
-  async execute(productOneId: number, productTwoId: number) {
-    if (productOneId === productTwoId) {
+  async execute(productIds: number[]) {
+    if (productIds.length < 2 || productIds.length > 3) {
+      throw new BadRequestException('Must compare 2 or 3 products')
+    }
+
+    const uniqueIds = [...new Set(productIds)]
+
+    if (uniqueIds.length < 2) {
       throw new BadRequestException('Cannot compare a product with itself')
     }
 
-    // Check if comparison already exists (cache)
-    const existing = await this.comparisonRepository.findByProducts(productOneId, productTwoId)
+    // Fetch all products
+    const products = await Promise.all(
+      uniqueIds.map((id) => this.productRepository.findById(id)),
+    )
 
-    if (existing && existing.analysis) {
-      try {
-        return JSON.parse(existing.analysis)
-      } catch {
-        // If stored analysis is not valid JSON, regenerate
+    for (let i = 0; i < products.length; i++) {
+      if (!products[i]) {
+        throw new NotFoundException(`Product ${uniqueIds[i]} not found`)
       }
     }
 
-    // Fetch products
-    const [product1, product2] = await Promise.all([
-      this.productRepository.findById(productOneId),
-      this.productRepository.findById(productTwoId),
-    ])
+    const toAIProduct = (p: NonNullable<(typeof products)[0]>) => ({
+      id: p.id,
+      name: p.name,
+      brand: p.brand,
+      category: p.category,
+      specs: p.specs,
+      price: Number(p.latestPrice?.price ?? 0),
+    })
 
-    if (!product1) throw new NotFoundException(`Product ${productOneId} not found`)
-    if (!product2) throw new NotFoundException(`Product ${productTwoId} not found`)
-
-    // Generate with AI
     const result = await this.openAIService.generateComparison({
-      product1: {
-        id: product1.id,
-        name: product1.name,
-        brand: product1.brand,
-        category: product1.category,
-        specs: product1.specs,
-        price: Number(product1.latestPrice?.price ?? 0),
-      },
-      product2: {
-        id: product2.id,
-        name: product2.name,
-        brand: product2.brand,
-        category: product2.category,
-        specs: product2.specs,
-        price: Number(product2.latestPrice?.price ?? 0),
-      },
+      product1: toAIProduct(products[0]!),
+      product2: toAIProduct(products[1]!),
+      product3: products[2] ? toAIProduct(products[2]) : undefined,
     })
 
     if (!result) {
       return {
-        analysis: 'No se pudo generar la comparación en este momento.',
-        winner: null,
+        recommendation: null,
+        summary: [],
         specs_comparison: [],
+        ratings: [],
       }
     }
-
-    // Persist in DB for future cache
-    await this.comparisonRepository.create({
-      productOneId,
-      productTwoId,
-      analysis: JSON.stringify(result),
-    })
 
     return result
   }

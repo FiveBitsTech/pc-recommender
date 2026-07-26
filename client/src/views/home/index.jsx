@@ -3,28 +3,16 @@
 import { useRouter } from 'next/navigation'
 
 import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import Card from '@mui/material/Card'
-import CardActionArea from '@mui/material/CardActionArea'
-import CardContent from '@mui/material/CardContent'
-import Chip from '@mui/material/Chip'
-import Grid from '@mui/material/Grid'
-import Typography from '@mui/material/Typography'
-import Skeleton from '@mui/material/Skeleton'
+import CircularProgress from '@mui/material/CircularProgress'
 
 import { useGetRecentRequirementsQuery } from './api/homeApi'
+import styles from './index.module.css'
 
 const FEATURES = [
-  { icon: 'ri-robot-2-line', title: 'Asesor con IA', description: 'Recomendaciones personalizadas basadas en tu presupuesto y necesidades' },
-  { icon: 'ri-scales-3-line', title: 'Comparador', description: 'Compara equipos lado a lado con análisis técnico detallado' },
-  { icon: 'ri-tools-line', title: 'Armador de PC', description: 'Genera configuraciones con componentes compatibles y precios reales' },
-  { icon: 'ri-shield-check-line', title: 'Sin sobreprecios', description: 'Detectamos precios inflados para que no pagues de más' },
-]
-
-const STEPS = [
-  { number: '1', title: 'Cuéntanos qué necesitas', description: 'Selecciona tipo de equipo, uso y presupuesto', icon: 'ri-questionnaire-line' },
-  { number: '2', title: 'Analizamos el mercado', description: 'IA revisa compatibilidad, precios y opciones disponibles', icon: 'ri-search-eye-line' },
-  { number: '3', title: 'Recibe recomendaciones', description: 'Opciones ordenadas con ventajas, desventajas y tiendas', icon: 'ri-sparkling-line' },
+  { image: '/images/features/asesor-ia.svg', title: 'Asesor IA', description: 'Recomendaciones adaptadas a tu presupuesto y necesidades.' },
+  { image: '/images/features/comparador.svg', title: 'Comparador', description: 'Compara equipos técnicamente lado a lado con IA.' },
+  { image: '/images/features/armador-pc.svg', title: 'Armador de PC', description: 'Genera configuraciones con componentes compatibles.' },
+  { image: '/images/features/sin-sobreprecios.svg', title: 'Sin sobreprecios', description: 'Detectamos precios inflados para que no pagues de más.' },
 ]
 
 const USAGE_ICONS = {
@@ -43,164 +31,107 @@ const HomePage = () => {
   const recentItems = recentData?.items ?? []
 
   return (
-    <Box>
-      {/* Hero Section */}
-      <Box
-        sx={{
-          textAlign: 'center',
-          py: 8,
-          px: 3,
-          background: 'linear-gradient(135deg, var(--mui-palette-primary-main) 0%, var(--mui-palette-primary-dark) 100%)',
-          borderRadius: 3,
-          color: 'white',
-          mb: 6,
-        }}
-      >
-        <Typography variant='h3' fontWeight={800} gutterBottom>
-          PC-Cotiza IA
-        </Typography>
-        <Typography variant='h6' sx={{ opacity: 0.9, mb: 1 }}>
-          Tu asesor tecnológico imparcial
-        </Typography>
-        <Typography variant='body1' sx={{ opacity: 0.8, maxWidth: 600, mx: 'auto', mb: 4 }}>
-          Encuentra la computadora o componentes ideales según tu presupuesto y necesidades.
-          Comparamos precios, validamos compatibilidad y te explicamos por qué cada opción es la mejor para ti.
-        </Typography>
-        <Button
-          variant='contained'
-          size='large'
-          color='inherit'
-          sx={{ color: 'primary.main', fontWeight: 700, px: 5, py: 1.5 }}
-          onClick={() => router.push('/requirements')}
-          startIcon={<i className='ri-sparkling-line' />}
-        >
-          Empezar ahora
-        </Button>
-      </Box>
+    <div className={styles.pageWrapper}>
+      {/* Hero Card — white card with shadow */}
+      <div className={styles.heroCard}>
+        {/* Inner gradient with grid pattern */}
+        <section className={styles.heroInner}>
+          {/* Welcome row */}
+          <div className={styles.welcomeRow}>
+            <span className={styles.welcomeText}>TE DAMOS LA BIENVENIDA A</span>
+            <span className={styles.brandText}>PC COTIZA-IA</span>
+          </div>
 
-      {/* Features Grid */}
-      <Box sx={{ mb: 6, px: 1 }}>
-        <Grid container spacing={2}>
-          {FEATURES.map((f) => (
-            <Grid item xs={12} sm={6} md={3} key={f.title}>
-              <Card variant='outlined' sx={{ height: '100%' }}>
-                <CardContent sx={{ textAlign: 'center', py: 3 }}>
-                  <i className={f.icon} style={{ fontSize: '2rem', color: 'var(--mui-palette-primary-main)' }} />
-                  <Typography variant='subtitle1' fontWeight={700} sx={{ mt: 1.5 }}>
-                    {f.title}
-                  </Typography>
-                  <Typography variant='body2' color='text.secondary'>
-                    {f.description}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
+          {/* Main title */}
+          <h1 className={styles.heroTitle}>
+            ¿NO SABES QUÉ PC COMPRAR?
+          </h1>
 
-      {/* How it works */}
-      <Box sx={{ mb: 6, px: 1 }}>
-        <Typography variant='h5' fontWeight={700} textAlign='center' gutterBottom>
-          ¿Cómo funciona?
-        </Typography>
-        <Typography variant='body1' color='text.secondary' textAlign='center' sx={{ mb: 4 }}>
-          En 3 simples pasos obtienes recomendaciones personalizadas
-        </Typography>
+          {/* Subtitle */}
+          <p className={styles.heroSubtitle}>
+            Encuentra la mejor opción para ti en pocos minutos y sin conocimientos técnicos.
+          </p>
 
-        <Grid container spacing={3} justifyContent='center'>
-          {STEPS.map((step) => (
-            <Grid item xs={12} sm={4} key={step.number}>
-              <Box sx={{ textAlign: 'center' }}>
-                <Box
-                  sx={{
-                    width: 64,
-                    height: 64,
-                    borderRadius: '50%',
-                    bgcolor: 'primary.lighter',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    mx: 'auto',
-                    mb: 2,
-                  }}
-                >
-                  <i className={step.icon} style={{ fontSize: '1.75rem', color: 'var(--mui-palette-primary-main)' }} />
-                </Box>
-                <Typography variant='subtitle1' fontWeight={700}>
-                  {step.title}
-                </Typography>
-                <Typography variant='body2' color='text.secondary'>
-                  {step.description}
-                </Typography>
-              </Box>
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
-
-      {/* Popular / Recent Searches */}
-      <Box sx={{ px: 1 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-          <Typography variant='h5' fontWeight={700}>
-            Búsquedas de la comunidad
-          </Typography>
-          <Chip label='En tiempo real' size='small' color='primary' variant='outlined' />
-        </Box>
-
-        {isLoading ? (
-          <Grid container spacing={2}>
-            {Array.from({ length: 3 }).map((_, i) => (
-              <Grid item xs={12} sm={6} md={4} key={i}>
-                <Skeleton variant='rounded' animation='wave' height={88} sx={{ borderRadius: 2 }} />
-              </Grid>
+          {/* Feature cards — tilted */}
+          <div className={styles.cardsRow}>
+            {FEATURES.map((f) => (
+              <div key={f.title} className={styles.featureCard}>
+                <div className={styles.featureIcon}>
+                  <img src={f.image} alt={f.title} />
+                </div>
+                <div>
+                  <p className={styles.featureCardTitle}>{f.title}</p>
+                  <p className={styles.featureCardDescription}>{f.description}</p>
+                </div>
+              </div>
             ))}
-          </Grid>
-        ) : recentItems.length === 0 ? (
-          <Typography variant='body2' color='text.secondary' textAlign='center' sx={{ py: 4 }}>
-            Aún no hay búsquedas. Sé el primero en usar el asesor IA.
-          </Typography>
-        ) : (
-          <Grid container spacing={2}>
-            {recentItems.map((req) => (
-              <Grid item xs={12} sm={6} md={4} key={req.id}>
-                <Card variant='outlined' sx={{ '&:hover': { boxShadow: 3 } }}>
-                  <CardActionArea onClick={() => router.push('/requirements')}>
-                    <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Box
-                        sx={{
-                          width: 44,
-                          height: 44,
-                          borderRadius: 2,
-                          bgcolor: 'primary.lighter',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          flexShrink: 0,
-                        }}
-                      >
-                        <i
-                          className={USAGE_ICONS[req.usageType] || 'ri-computer-line'}
-                          style={{ fontSize: '1.25rem', color: 'var(--mui-palette-primary-main)' }}
-                        />
-                      </Box>
-                      <Box>
-                        <Typography variant='body1' fontWeight={600}>
-                          {req.deviceType === 'laptop' ? 'Laptop' : 'PC'} para {req.usageType}
-                        </Typography>
-                        <Typography variant='body2' color='text.secondary'>
-                          Presupuesto: S/ {req.budget?.toLocaleString('es-PE')}
-                        </Typography>
-                      </Box>
-                    </CardContent>
-                  </CardActionArea>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        )}
-      </Box>
-    </Box>
+          </div>
+
+          {/* CTA Button — gradient */}
+          <a className={styles.ctaButton} onClick={() => router.push('/requirements')}>
+            <span className={styles.ctaIconWrapper}>
+              <i className='ri-arrow-right-line' style={{ fontSize: '1.25rem', color: '#3d95ee' }} />
+            </span>
+            <span className={styles.ctaText}>Empezar Ahora</span>
+          </a>
+        </section>
+
+        {/* Community Searches Section — inside the card */}
+        <section className={styles.communitySection}>
+          <div className={styles.communityHeader}>
+            <img src='/images/icons/star-ai.svg' alt='AI' className={styles.communityIcon} />
+            <div>
+              <h2 className={styles.communityTitle}>Búsquedas de la comunidad</h2>
+              <p className={styles.communitySubtitle}>
+                Conoce las recomendaciones que ayudaron a otros usuarios a elegir su computadora.
+              </p>
+            </div>
+          </div>
+
+          <div className={styles.communityDivider} />
+
+          {isLoading ? (
+            <div className={styles.communityLoading}>
+              <CircularProgress size={28} />
+            </div>
+          ) : recentItems.length === 0 ? (
+            <p className={styles.communityEmpty}>
+              Aún no hay búsquedas. Sé el primero en usar el asesor IA.
+            </p>
+          ) : (
+            <div className={styles.communityGrid}>
+              {recentItems.map((req) => (
+                <div key={req.id} className={styles.communityCard} onClick={() => router.push('/requirements')}>
+                  <div className={styles.communityCardIcon}>
+                    <i className={USAGE_ICONS[req.usageType] || 'ri-computer-line'} />
+                  </div>
+                  <div className={styles.communityCardContent}>
+                    <p className={styles.communityCardTitle}>
+                      {req.deviceType === 'laptop' ? 'Laptop' : 'PC'} para {req.usageType}
+                    </p>
+                    <p className={styles.communityCardBudget}>
+                      S/ {req.budget?.toLocaleString('es-PE')}
+                    </p>
+                  </div>
+                  <i className='ri-arrow-right-s-line' style={{ color: '#3d95ee', fontSize: '1.25rem' }} />
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className={styles.communityTrust}>
+            <div className={styles.trustAvatars}>
+              <span className={styles.trustDot} style={{ background: '#3d95ee' }} />
+              <span className={styles.trustDot} style={{ background: '#2faab9' }} />
+              <span className={styles.trustDot} style={{ background: '#2fba9b' }} />
+              <span className={styles.trustDot} style={{ background: '#ff9800' }} />
+              <span className={styles.trustDot} style={{ background: '#9c27b0' }} />
+            </div>
+            <p className={styles.trustText}>Personas confían en PC Cotiza-IA para encontrar su equipo ideal</p>
+          </div>
+        </section>
+      </div>
+    </div>
   )
 }
 
