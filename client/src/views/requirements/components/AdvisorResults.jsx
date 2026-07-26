@@ -168,6 +168,7 @@ const AdvisorResults = ({ recommendations, onViewDetail }) => {
                     type='checkbox'
                     checked={compareList.some((r) => r.id === rec.id)}
                     onChange={() => toggleCompare(rec)}
+                    style={{ accentColor: '#3d95ee', colorScheme: 'light' }}
                   />
                   <span>Comparar</span>
                 </label>
