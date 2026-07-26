@@ -199,6 +199,7 @@ const useAdvisorChat = () => {
     deviceSelected,
     showRetry,
     error,
+    requirement: formRef.current,
     selectOption,
     selectDevice,
     retry,

@@ -101,7 +101,7 @@ const HomePage = () => {
           ) : (
             <div className={styles.communityGrid}>
               {recentItems.map((req) => (
-                <div key={req.id} className={styles.communityCard} onClick={() => router.push('/requirements')}>
+                <div key={req.id} className={styles.communityCard} onClick={() => router.push(`/community/${req.id}`)}>
                   <div className={styles.communityCardIcon}>
                     <i className={USAGE_ICONS[req.usageType] || 'ri-computer-line'} />
                   </div>
@@ -127,7 +127,7 @@ const HomePage = () => {
               <span className={styles.trustDot} style={{ background: '#ff9800' }} />
               <span className={styles.trustDot} style={{ background: '#9c27b0' }} />
             </div>
-            <p className={styles.trustText}>Personas confían en PC Cotiza-IA para encontrar su equipo ideal</p>
+            <p className={styles.trustText}>Personas confían en Cotiza-IA para encontrar su equipo ideal</p>
           </div>
         </section>
       </div>

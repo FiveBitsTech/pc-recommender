@@ -106,7 +106,7 @@ const LoginV2 = ({ mode }) => {
                 const { setAuthSession } = await import('@/utils/authSession')
                 const data = await loginRequest({ email, password })
                 setAuthSession(data)
-                router.push('/home')
+                router.push(data.user?.role === 'ADMIN' ? '/admin-panel' : '/home')
               } catch (err) {
                 setError(err?.message || 'No se pudo iniciar sesión')
               } finally {

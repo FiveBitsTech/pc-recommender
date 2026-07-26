@@ -183,6 +183,12 @@
   display: flex;
   gap: 9px;
   overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.chatMessages::-webkit-scrollbar {
+  display: none;
 }
 
 /* Bot avatar */
@@ -330,6 +336,12 @@
   gap: 8px;
   overflow-y: auto;
   flex: 1;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.messagesArea::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 
 /* User message row — aligned to right */

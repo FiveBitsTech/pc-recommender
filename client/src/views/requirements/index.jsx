@@ -48,6 +48,7 @@ const RequirementsPage = () => {
     buildResult,
     deviceSelected,
     showRetry,
+    requirement,
     selectOption,
     selectDevice,
     retry,
@@ -110,7 +111,7 @@ const RequirementsPage = () => {
               {/* Show results when recommendations are loaded */}
               {isCompleted && recommendations.length > 0 ? (
                 <div>
-                  <AdvisorResults recommendations={recommendations} />
+                  <AdvisorResults recommendations={recommendations} requirement={requirement} />
                   <div className={styles.chatFooter}>
                     <p className={styles.chatFooterText}>
                       No es necesario saber de tecnología — solo cuéntanos qué necesitas
@@ -134,7 +135,7 @@ const RequirementsPage = () => {
                       {/* Initial bot messages */}
                       <div className={styles.messagesArea}>
                         <div className={styles.botBubble}>
-                          ¡Hola! Soy tu asesor inteligente de PC COTIZA - IA. No necesitas saber nada de computadoras — yo me encargo. Te haré algunas preguntas sencillas y encontraré la mejor opción para ti.
+                          ¡Hola! Soy tu asesor inteligente de COTIZA IA. No necesitas saber de computadoras; yo te ayudaré. Te haré algunas preguntas sencillas para encontrar la mejor opción para ti.
                         </div>
                         <div className={styles.botBubble}>
                           Para empezar, ¿qué estás buscando hoy?

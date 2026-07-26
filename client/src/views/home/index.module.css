@@ -1,14 +1,12 @@
 /* Page background */
 .pageWrapper {
   background-color: #f7f6fa;
-  height: 100vh;
+  min-height: 100vh;
   padding: 24px;
 }
 
 @media (max-width: 900px) {
   .pageWrapper {
-    height: auto;
-    min-height: 100vh;
     padding: 12px;
   }
 }
@@ -25,7 +23,6 @@
   align-items: center;
   gap: 20px;
   text-align: center;
-  flex: 1;
   justify-content: center;
   min-height: 0;
 }
@@ -44,16 +41,14 @@
   border-radius: 24px;
   box-shadow: 0px 4px 10px rgba(46, 38, 61, 0.2);
   padding: 28px;
-  overflow: hidden;
-  height: calc(100vh - 48px);
+  overflow: visible;
+  min-height: calc(100vh - 48px);
   display: flex;
   flex-direction: column;
 }
 
 @media (max-width: 900px) {
   .heroCard {
-    height: auto;
-    min-height: calc(100vh - 48px);
     padding: 16px;
   }
 
@@ -161,28 +156,53 @@
   .cardsRow {
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
-    padding: 16px 16px;
+    padding: 16px 0;
   }
 
   .featureIcon {
-    max-width: 100px;
+    max-width: 60px;
     margin: 0 auto;
   }
 
   .featureCardTitle {
-    font-size: 11px;
-    line-height: 16px;
+    font-size: 10px;
+    line-height: 14px;
   }
 
   .featureCardDescription {
-    font-size: 10px;
-    line-height: 13px;
+    font-size: 9px;
+    line-height: 12px;
   }
 
   .featureCard {
     padding: 8px;
-    gap: 6px;
+    gap: 4px;
     border-radius: 8px;
+  }
+}
+
+@media (max-width: 380px) {
+  .heroCard {
+    padding: 8px;
+  }
+
+  .heroInner {
+    padding: 24px 12px;
+  }
+
+  .cardsRow {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 12px 0;
+  }
+
+  .featureIcon {
+    max-width: 50px;
+  }
+
+  .featureCard {
+    padding: 6px;
+    gap: 4px;
   }
 }
 
@@ -285,6 +305,7 @@
   text-decoration: none;
   position: relative;
   z-index: 1;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .ctaButton:hover {
@@ -366,7 +387,7 @@
 
 .communityGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 12px;
   margin-bottom: 24px;
 }
@@ -460,11 +481,6 @@
     padding: 24px 16px;
   }
 
-  .communityGrid {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
-
   .communityTitle {
     font-size: 18px;
   }
@@ -475,5 +491,48 @@
 
   .communityTrust {
     flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 500px) {
+  .communitySection {
+    padding: 16px 12px;
+  }
+
+  .communityCardTitle {
+    font-size: 13px;
+  }
+
+  .communityCardBudget {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 380px) {
+  .communitySection {
+    padding: 12px 8px;
+  }
+
+  .communityCard {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .communityCardIcon {
+    width: 32px;
+    height: 32px;
+    font-size: 0.9rem;
+  }
+
+  .communityCardTitle {
+    font-size: 12px;
+  }
+
+  .communityCardBudget {
+    font-size: 10px;
+  }
+
+  .trustText {
+    font-size: 11px;
   }
 }

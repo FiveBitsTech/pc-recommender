@@ -1,0 +1,59 @@
+.criteriaWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.criteriaLabel {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  color: rgba(46, 38, 61, 0.5);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: white;
+  border: 1px solid #e8e8e8;
+  border-radius: 500px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  color: rgba(46, 38, 61, 0.8);
+}
+
+.chip i {
+  font-size: 15px;
+  color: #3d95ee;
+}
+
+@media (max-width: 768px) {
+  .chips {
+    gap: 6px;
+  }
+
+  .chip {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+
+  .chip i {
+    font-size: 13px;
+  }
+
+  .criteriaLabel {
+    font-size: 11px;
+  }
+}
