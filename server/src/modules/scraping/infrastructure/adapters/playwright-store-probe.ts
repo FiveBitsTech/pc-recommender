@@ -657,6 +657,16 @@ export class PlaywrightStoreProbe {
         if (value && value.length <= 60 && /\d/.test(value)) pushPrice(value)
       })
 
+      // Priority 6b: find any visible element with S/ text (covers spans without price class)
+      priceScope.querySelectorAll('span, p, div, strong, b').forEach(el => {
+        const value = text(el)
+        if (value && /S\/\.?\s*[0-9]/.test(value) && value.length <= 80) {
+          // Only take the first S/ price found in this element (not child elements with $)
+          const match = value.match(/S\/\.?\s*[0-9][0-9.,]*[0-9]/)
+          if (match) pushPrice(match[0])
+        }
+      })
+
       // Priority 7: regex prices from product scope text only (not entire body)
       const scopeText = priceScope.textContent?.slice(0, 3000) || ''
       const scopePrices =
