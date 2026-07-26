@@ -27,6 +27,20 @@ export const requirementApi = createApi({
         { type: 'Recommendation', id: requirementId },
       ],
     }),
+    compareProducts: builder.mutation({
+      query: (body) => ({
+        url: '/comparisons/compare',
+        method: 'POST',
+        body,
+      }),
+    }),
+    buildPC: builder.mutation({
+      query: (body) => ({
+        url: '/builder',
+        method: 'POST',
+        body,
+      }),
+    }),
   }),
 })
 
@@ -36,4 +50,6 @@ export const {
   useCreateRequirementMutation,
   useGetRecommendationsByRequirementQuery,
   useLazyGetRecommendationsByRequirementQuery,
+  useCompareProductsMutation,
+  useBuildPCMutation,
 } = requirementApi

@@ -1,0 +1,209 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.headerLeft { display: flex; align-items: center; gap: 12px; }
+.headerActions { display: flex; gap: 8px; }
+
+.headerTitle {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700; font-size: 18px; color: rgba(46, 38, 61, 0.9); margin: 0;
+}
+
+.headerSubtitle {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 400; font-size: 14px; color: rgba(46, 38, 61, 0.5); margin: 0;
+}
+
+.compareButton {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 24px;
+  background: linear-gradient(93.57deg, #3d95ee 27.34%, #2faab9 75.1%, #2fba9b 130.56%);
+  color: white; border: none; border-radius: 8px;
+  font-family: 'Inter', sans-serif; font-weight: 500; font-size: 15px;
+  cursor: pointer; transition: opacity 0.2s;
+}
+.compareButton:hover { opacity: 0.9; }
+.compareButton:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.closeButton {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 24px; background: white;
+  color: rgba(46, 38, 61, 0.9); border: 1px solid #e0e0e0; border-radius: 8px;
+  font-family: 'Inter', sans-serif; font-weight: 500; font-size: 15px; cursor: pointer;
+}
+
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.chip {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 16px; background: #f0f5fd;
+  border: 1px solid rgba(61, 149, 238, 0.2); border-radius: 500px;
+  font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 500; font-size: 13px;
+  color: rgba(46, 38, 61, 0.9);
+}
+
+.chipRemove {
+  display: flex; align-items: center; justify-content: center;
+  background: none; border: none; cursor: pointer; color: #3d95ee; font-size: 16px; padding: 0;
+}
+
+.resultSection { display: flex; flex-direction: column; gap: 24px; }
+
+/* Recommendation card */
+.recoCard {
+  background: #f0faf7; border: 1px solid #c8e6c9; border-radius: 16px;
+  padding: 24px; display: flex; flex-direction: column; gap: 16px;
+}
+
+.recoHeader { display: flex; align-items: center; gap: 16px; }
+
+.recoScore {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: linear-gradient(135deg, #3d95ee, #2fba9b);
+  color: white; font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 800; font-size: 18px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.recoScore span { font-size: 10px; font-weight: 400; }
+
+.recoLabel {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 500; font-size: 13px; color: #2e7d32; margin: 0;
+}
+
+.recoName {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700; font-size: 18px; color: rgba(46, 38, 61, 0.9); margin: 0;
+}
+
+.recoCompany {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 500; font-size: 13px; color: rgba(46, 38, 61, 0.5); margin: 4px 0 0 0;
+  display: flex; align-items: center; gap: 4px;
+}
+
+.recoCompany i { font-size: 14px; }
+
+.recoReasons { display: flex; flex-direction: column; gap: 6px; }
+
+.recoReason {
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; color: rgba(46, 38, 61, 0.8);
+}
+.recoReason i { color: #2fba9b; font-size: 16px; }
+
+.recoTradeoffs { border-top: 1px solid #c8e6c9; padding-top: 12px; }
+
+.tradeoffLabel {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 600; font-size: 13px; color: rgba(46, 38, 61, 0.6); margin: 0 0 4px 0;
+}
+
+.tradeoffItem {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13px; color: rgba(46, 38, 61, 0.6); margin-right: 12px;
+}
+
+/* Summary */
+.summarySection { display: flex; flex-direction: column; gap: 12px; }
+
+.summaryTitle {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700; font-size: 16px; color: rgba(46, 38, 61, 0.9); margin: 0;
+}
+
+.summaryGrid { display: flex; flex-direction: column; gap: 8px; }
+
+.summaryItem {
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px;
+}
+
+.summaryIcon { font-size: 18px; }
+.summaryUse { font-weight: 600; color: rgba(46, 38, 61, 0.8); }
+.summaryProduct { color: #3d95ee; font-weight: 600; }
+
+/* Specs table */
+.specsSection {
+  border: 1px solid #e0e0e0; border-radius: 12px; overflow: hidden;
+}
+
+.specsTableHeader {
+  display: grid; grid-template-columns: 120px 1fr 1fr;
+  padding: 12px 16px; background: rgba(138, 141, 147, 0.08);
+  font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600; font-size: 13px;
+  color: rgba(46, 38, 61, 0.7);
+}
+
+.specsTableRow {
+  display: grid; grid-template-columns: 120px 1fr 1fr;
+  padding: 10px 16px; border-top: 1px solid #f0f0f0;
+  font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px;
+}
+
+.specCat { font-weight: 600; color: rgba(46, 38, 61, 0.9); }
+.specNormal { color: rgba(46, 38, 61, 0.7); }
+.specWin { color: #3d95ee; font-weight: 600; }
+
+/* Ratings */
+.ratingsSection { display: flex; flex-direction: column; gap: 12px; }
+
+.ratingsTitle {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700; font-size: 16px; color: rgba(46, 38, 61, 0.9); margin: 0;
+}
+
+.ratingsGrid {
+  border: 1px solid #e0e0e0; border-radius: 12px; overflow: hidden;
+}
+
+.ratingsHeader {
+  display: grid; grid-template-columns: 140px 1fr 1fr;
+  padding: 10px 16px; background: rgba(138, 141, 147, 0.08);
+  font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600; font-size: 12px;
+  color: rgba(46, 38, 61, 0.7);
+}
+
+.ratingsRow {
+  display: grid; grid-template-columns: 140px 1fr 1fr;
+  padding: 10px 16px; border-top: 1px solid #f0f0f0;
+  align-items: center;
+}
+
+.ratingLabel {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 600; font-size: 14px; color: rgba(46, 38, 61, 0.9);
+}
+
+.stars { display: flex; gap: 2px; }
+.stars i { font-size: 16px; color: #ff9800; }
+.starsNumber { display: none; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600; font-size: 13px; color: #ff9800; }
+
+@media (max-width: 768px) {
+  .header { flex-direction: column; align-items: stretch; gap: 12px; }
+  .headerActions { justify-content: stretch; }
+  .compareButton, .closeButton { flex: 1; justify-content: center; }
+  .specsTableHeader, .specsTableRow { grid-template-columns: 80px 1fr 1fr; font-size: 12px; padding: 8px 12px; }
+  .ratingsHeader, .ratingsRow { grid-template-columns: 100px 1fr 1fr; font-size: 12px; }
+  .recoCard { padding: 16px; }
+  .recoName { font-size: 15px; }
+
+  .summaryItem { flex-wrap: wrap; }
+  .summaryProduct { width: 100%; padding-left: 26px; }
+
+  .recoTradeoffs { display: flex; flex-direction: column; gap: 4px; }
+  .tradeoffItem { display: block; margin-right: 0; }
+
+  .stars { display: none; }
+  .starsNumber { display: inline; }
+}

@@ -1,0 +1,254 @@
+.detailWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding: 36px 40px;
+}
+
+.separator {
+  height: 1px;
+  background: #e0e0e0;
+}
+
+.reasonSection {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.sectionIcon {
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+}
+
+.sectionTitle {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 28px;
+  color: rgba(46, 38, 61, 0.9);
+  margin: 0;
+}
+
+.sectionText {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 28px;
+  color: rgba(46, 38, 61, 0.7);
+  margin: 0;
+}
+
+.twoColumns {
+  display: flex;
+  gap: 40px;
+}
+
+.column {
+  flex: 1;
+}
+
+.columnTitle {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 28px;
+  color: rgba(46, 38, 61, 0.9);
+  margin: 0;
+}
+
+.columnSubtitle {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 28px;
+  color: rgba(46, 38, 61, 0.5);
+  margin: 0;
+}
+
+.checkList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 16px;
+}
+
+.checkItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 28px;
+  color: rgba(46, 38, 61, 0.7);
+}
+
+.checkItem i {
+  font-size: 18px;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+
+.specsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.specsTable {
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 16px;
+}
+
+.specsHeader {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: rgba(138, 141, 147, 0.08);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  color: rgba(46, 38, 61, 0.7);
+}
+
+.specsRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-top: 1px solid #f0f0f0;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 16px;
+  line-height: 28px;
+}
+
+.specsRow span:first-child {
+  color: rgba(46, 38, 61, 0.9);
+  font-weight: 500;
+}
+
+.specsRow span:last-child {
+  color: rgba(46, 38, 61, 0.7);
+}
+
+.actionsSection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.actionsInfo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.actionsButtons {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.primaryButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  background: linear-gradient(93.57deg, #3d95ee 27.34%, #2faab9 75.1%, #2fba9b 130.56%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.primaryButton:hover {
+  opacity: 0.9;
+}
+
+.secondaryButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  background: white;
+  color: rgba(46, 38, 61, 0.9);
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.secondaryButton:hover {
+  border-color: #3d95ee;
+}
+
+@media (max-width: 768px) {
+  .detailWrapper {
+    padding: 20px 16px;
+    gap: 20px;
+  }
+
+  .twoColumns {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .actionsSection {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .actionsButtons {
+    flex-direction: column;
+  }
+
+  .sectionTitle {
+    font-size: 17px;
+  }
+
+  .columnTitle {
+    font-size: 15px;
+  }
+
+  .columnSubtitle {
+    font-size: 13px;
+  }
+
+  .checkItem {
+    font-size: 14px;
+    line-height: 22px;
+  }
+
+  .specsRow {
+    font-size: 14px;
+    padding: 10px 14px;
+  }
+
+  .specsHeader {
+    font-size: 13px;
+    padding: 10px 14px;
+  }
+
+  .sectionText {
+    font-size: 14px;
+  }
+
+  .primaryButton,
+  .secondaryButton {
+    font-size: 14px;
+    padding: 10px 18px;
+    justify-content: center;
+  }
+}
