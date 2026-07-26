@@ -616,10 +616,10 @@ export class PlaywrightStoreProbe {
         // Reject values that look like HTML/script content
         if (clean.includes('<') || clean.length > 100) return
         priceCandidates.push(clean)
-        // If text contains a PEN price in parentheses like "(S/ 2.425,53)", extract it separately
-        const penMatch = clean.match(/\(?\s*(S\/\.?\s*(?:[0-9]{1,3}(?:[.,][0-9]{3})*(?:[.,][0-9]{1,2})?|[0-9]{4,6}(?:[.,][0-9]{1,2})?))\s*\)?/)
-        if (penMatch && penMatch[1] && penMatch[1] !== clean) {
-          priceCandidates.push(penMatch[1])
+        // If text contains a PEN price like "(S/ 2.425,53)" or "S/. 8264.60", extract it separately
+        const penMatch = clean.match(/S\/\.?\s*([0-9][0-9.,]*[0-9])/)
+        if (penMatch && penMatch[0] !== clean) {
+          priceCandidates.push(penMatch[0])
         }
       }
 
