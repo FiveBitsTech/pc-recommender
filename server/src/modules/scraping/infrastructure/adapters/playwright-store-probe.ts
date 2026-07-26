@@ -63,15 +63,15 @@ const CATEGORY_URL_PATTERNS = [
 const PRODUCT_URL_PATTERN = /\/\d{2,}-[a-z]/i
 
 const isLikelyProductUrl = (url: string): boolean => {
-  const path = new URL(url).pathname.toLowerCase()
-  // Reject obvious category/listing URLs
-  if (CATEGORY_URL_PATTERNS.some(pattern => pattern.test(path))) return false
-  // Accept if matches product hints or has numeric ID pattern
-  if (PRODUCT_HREF_HINTS.some(hint => path.includes(hint))) return true
-  if (PRODUCT_URL_PATTERN.test(path)) return true
-  // Accept URLs with .html extension (common for product pages)
-  if (/\.html?$/.test(path) && path.split('/').length >= 3) return true
-  return false
+  try {
+    const path = new URL(url).pathname.toLowerCase()
+    // Reject obvious category/listing URLs
+    if (CATEGORY_URL_PATTERNS.some(pattern => pattern.test(path))) return false
+    // Accept everything else — the listing phase already filtered with selectors/hints
+    return true
+  } catch {
+    return false
+  }
 }
 
 const MIN_VALID_PRICE_PEN = 50 // Minimum realistic price for tech products in soles
@@ -410,6 +410,13 @@ export class PlaywrightStoreProbe {
   ): Promise<ScrapedProductItem | null> {
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 })
 
+    // Detect if we got redirected to homepage or a different page
+    const currentUrl = page.url()
+    const currentPath = new URL(currentUrl).pathname
+    if (currentPath === '/' || currentPath === '/index.html' || currentPath === '/home') {
+      return null // Redirected to homepage, not a valid product
+    }
+
     const extracted = await page.evaluate(selectors => {
       const text = (el: Element | null | undefined) => el?.textContent?.replace(/\s+/g, ' ').trim() || ''
 
@@ -429,12 +436,21 @@ export class PlaywrightStoreProbe {
         return value || null
       }
 
-      const title =
-        pick(selectors.name) ||
-        document.querySelector('[itemprop="name"]')?.textContent?.trim() ||
-        document.querySelector('h1')?.textContent?.trim() ||
-        document.querySelector('meta[property="og:title"]')?.getAttribute('content') ||
-        document.title
+      const title = (() => {
+        // Priority: config selector > itemprop name > h1 > og:title > document title
+        const candidates = [
+          pick(selectors.name),
+          document.querySelector('[itemprop="name"]')?.textContent?.trim(),
+          document.querySelector('h1')?.textContent?.trim(),
+          document.querySelector('h2[class*="product" i]')?.textContent?.trim(),
+          document.querySelector('meta[property="og:title"]')?.getAttribute('content'),
+          document.title,
+        ].filter(Boolean) as string[]
+
+        // Pick the first candidate that looks like a product name (not generic navigation)
+        const generic = /^(inicio|home|tienda|shop|bienvenido|welcome|error|404|página no encontrada)$/i
+        return candidates.find(c => c.length > 3 && !generic.test(c.trim())) || candidates[0] || ''
+      })()
 
       const configImage = query(selectors.image)
       const image =
