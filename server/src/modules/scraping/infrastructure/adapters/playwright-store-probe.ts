@@ -135,7 +135,18 @@ export class PlaywrightStoreProbe {
     const browser = await chromium.launch({ headless: true })
 
     try {
-      const page = await browser.newPage()
+      const page = await browser.newPage({
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+        viewport: { width: 1366, height: 768 },
+        locale: 'es-PE',
+      })
+
+      // Evade basic bot detection
+      await page.addInitScript(() => {
+        Object.defineProperty(navigator, 'webdriver', { get: () => false })
+        Object.defineProperty(navigator, 'languages', { get: () => ['es-PE', 'es', 'en'] })
+        Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] })
+      })
       report?.({ phase: 'listing', message: 'Explorando listados…' })
       const seeds: ListingTask[] = config.categories
         .filter(category => hostOf(category.url) === baseHost)
@@ -271,6 +282,13 @@ export class PlaywrightStoreProbe {
 
       try {
         await page.goto(task.url, { waitUntil: 'domcontentloaded', timeout: 60000 })
+
+        // Detect and wait for Cloudflare challenge
+        const listingTitle = await page.title()
+        if (/just a moment|cloudflare|attention required/i.test(listingTitle)) {
+          await page.waitForTimeout(6000)
+        }
+
         await this.settle(page, options.waitMs)
 
         const { selected, all } = await this.collectHrefs(page, options.productLinkSelector)
@@ -410,11 +428,25 @@ export class PlaywrightStoreProbe {
   ): Promise<ScrapedProductItem | null> {
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 })
 
+    // Wait a bit for JS rendering and potential anti-bot challenges
+    await page.waitForTimeout(1500)
+
     // Detect if we got redirected to homepage or a different page
     const currentUrl = page.url()
     const currentPath = new URL(currentUrl).pathname
     if (currentPath === '/' || currentPath === '/index.html' || currentPath === '/home') {
       return null // Redirected to homepage, not a valid product
+    }
+
+    // Detect Cloudflare challenge page
+    const pageTitle = await page.title()
+    if (/just a moment|cloudflare|attention required/i.test(pageTitle)) {
+      // Wait for challenge to resolve
+      await page.waitForTimeout(5000)
+      const newTitle = await page.title()
+      if (/just a moment|cloudflare|attention required/i.test(newTitle)) {
+        return null // Still blocked by Cloudflare
+      }
     }
 
     const extracted = await page.evaluate(selectors => {
