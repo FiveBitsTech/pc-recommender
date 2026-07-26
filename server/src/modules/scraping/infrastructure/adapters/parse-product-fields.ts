@@ -393,14 +393,24 @@ export const detectPrice = (signals: ProductSignals): { price: number; currency:
     }
   }
 
-  // Second pass: take first valid price from candidates that don't mix currencies
+  // Second pass: collect all valid prices and pick the best one
+  // For tech products, the real price is usually the highest non-extreme value
+  let bestPrice = 0
+  let bestCurrency = declared ?? 'PEN'
   for (const raw of signals.priceCandidates) {
     // Skip candidates that contain both $ and S/ (mixed currency strings)
     if (/\$/.test(raw) && /S\//.test(raw)) continue
+    // Skip candidates that are USD-only
+    if (/us\$|usd|\$/.test(raw) && !/S\//.test(raw)) continue
     const value = parseMoney(raw)
-    if (value > 1) {
-      return { price: value, currency: declared ?? currencyFromRaw(raw) ?? 'PEN' }
+    if (value > bestPrice && value < 500000) {
+      bestPrice = value
+      bestCurrency = declared ?? currencyFromRaw(raw) ?? 'PEN'
     }
+  }
+
+  if (bestPrice > 1) {
+    return { price: bestPrice, currency: bestCurrency }
   }
 
   return { price: 0, currency: declared ?? 'PEN' }
