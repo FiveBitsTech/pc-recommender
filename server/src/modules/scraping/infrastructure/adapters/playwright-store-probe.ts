@@ -586,9 +586,25 @@ export class PlaywrightStoreProbe {
       const metaBrand =
         document.querySelector('meta[property="product:brand"]')?.getAttribute('content') ||
         document.querySelector('meta[itemprop="brand"]')?.getAttribute('content') ||
-        document.querySelector('[itemprop="brand"]')?.textContent?.trim() ||
-        document.querySelector('.manufacturer_name, .brand-name, [class*="manufacturer" i], [class*="brand" i]')?.textContent?.replace(/^.*:/, '').trim() ||
-        null
+        (() => {
+          // Get brand from itemprop or manufacturer class, but only text content (no HTML)
+          const candidates = [
+            document.querySelector('[itemprop="brand"] [itemprop="name"]'),
+            document.querySelector('[itemprop="brand"]'),
+            document.querySelector('.manufacturer_name'),
+            document.querySelector('[class*="manufacturer" i]'),
+            document.querySelector('[class*="brand-name" i]'),
+          ]
+          for (const el of candidates) {
+            if (!el) continue
+            const val = el.textContent?.replace(/\s+/g, ' ').trim() || ''
+            // Must be short text, not HTML/script content
+            if (val && val.length <= 50 && !val.includes('<') && !/^(marca|brand):?\s*$/i.test(val)) {
+              return val.replace(/^.*:\s*/, '').trim() || null
+            }
+          }
+          return null
+        })()
 
       const attr = (selector: string, name: string) =>
         document.querySelector(selector)?.getAttribute(name) || null
@@ -597,6 +613,8 @@ export class PlaywrightStoreProbe {
       const pushPrice = (value: string | null | undefined) => {
         const clean = (value ?? '').trim()
         if (!clean || !/\d/.test(clean) || priceCandidates.length >= 40) return
+        // Reject values that look like HTML/script content
+        if (clean.includes('<') || clean.length > 100) return
         priceCandidates.push(clean)
         // If text contains a PEN price in parentheses like "(S/ 2.425,53)", extract it separately
         const penMatch = clean.match(/\(?\s*(S\/\.?\s*[0-9]{1,3}(?:[.,][0-9]{3})*(?:[.,][0-9]{2})?)\s*\)?/)
@@ -605,26 +623,47 @@ export class PlaywrightStoreProbe {
         }
       }
 
-      // Prioridad: datos estructurados > meta > selector del config > atributos > clases > texto.
+      // Priority 1: structured data (JSON-LD prices)
       jsonLdPrices.forEach(pushPrice)
+
+      // Priority 2: meta tags
       pushPrice(attr('meta[property="product:price:amount"]', 'content'))
       pushPrice(attr('meta[itemprop="price"]', 'content'))
-      pushPrice(attr('[itemprop="price"]', 'content'))
-      pushPrice(text(document.querySelector('[itemprop="price"]')))
-      pushPrice(pick(selectors.price))
-      pushPrice(attr('[data-price-amount]', 'data-price-amount'))
-      pushPrice(attr('[data-price]', 'data-price'))
 
-      document.querySelectorAll('[class*="price" i], [id*="price" i], [class*="precio" i]').forEach(el => {
+      // Priority 3: itemprop price ONLY within product context (not global)
+      const productContainer = document.querySelector('[itemtype*="Product"], [itemprop="offers"], .product-container, .product-detail, #product, [id*="product" i]')
+      const priceScope = productContainer || document.querySelector('main, [role="main"], .main-content, #content') || document.body
+      const scopedPriceEl = priceScope.querySelector('[itemprop="price"]')
+      if (scopedPriceEl) {
+        pushPrice(scopedPriceEl.getAttribute('content'))
+        pushPrice(text(scopedPriceEl))
+      }
+
+      // Priority 4: config selector
+      pushPrice(pick(selectors.price))
+
+      // Priority 5: data attributes within product scope
+      const scopedDataPrice = priceScope.querySelector('[data-price-amount], [data-price]')
+      if (scopedDataPrice) {
+        pushPrice(scopedDataPrice.getAttribute('data-price-amount') || scopedDataPrice.getAttribute('data-price'))
+      }
+
+      // Priority 6: price class elements ONLY within product scope (avoid sidebar/footer prices)
+      priceScope.querySelectorAll('[class*="price" i], [class*="precio" i]').forEach(el => {
+        // Skip elements in navigation, sidebar, footer, cart
+        const parent = el.closest('nav, footer, header, aside, [class*="sidebar" i], [class*="cart" i], [class*="related" i], [class*="similar" i]')
+        if (parent) return
         const value = text(el)
-        if (value && value.length <= 40 && /\d/.test(value)) pushPrice(value)
+        if (value && value.length <= 60 && /\d/.test(value)) pushPrice(value)
       })
 
-      const bodyPrices =
-        bodyText.match(
-          /(?:S\/\.?|US\$|PEN|USD|\$)\s*[0-9]{1,3}(?:[.,][0-9]{3})*(?:[.,][0-9]{2})?|[0-9]{1,3}(?:[.,][0-9]{3})*(?:[.,][0-9]{2})?\s*(?:soles|pen|dolares|usd)/gi,
+      // Priority 7: regex prices from product scope text only (not entire body)
+      const scopeText = priceScope.textContent?.slice(0, 3000) || ''
+      const scopePrices =
+        scopeText.match(
+          /(?:S\/\.?|US\$|PEN|USD)\s*[0-9]{1,3}(?:[.,][0-9]{3})*(?:[.,][0-9]{2})?/gi,
         ) ?? []
-      bodyPrices.forEach(pushPrice)
+      scopePrices.slice(0, 5).forEach(pushPrice)
 
       const priceCurrency =
         jsonLdCurrency ||
