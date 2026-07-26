@@ -4,9 +4,10 @@ import { useState } from 'react'
 
 import ProductDetail from './ProductDetail'
 import CompareBar from './CompareBar'
+import SearchCriteria from './SearchCriteria'
 import styles from './AdvisorResults.module.css'
 
-const AdvisorResults = ({ recommendations, onViewDetail }) => {
+const AdvisorResults = ({ recommendations, requirement, onViewDetail }) => {
   const [selectedRec, setSelectedRec] = useState(null)
   const [compareList, setCompareList] = useState([])
   const [activeTab, setActiveTab] = useState('recommendations')
@@ -98,6 +99,9 @@ const AdvisorResults = ({ recommendations, onViewDetail }) => {
               <p className={styles.headerSubtitle}>Todas las opciones están 100% verificadas.</p>
             </div>
           </div>
+
+          {/* Search criteria */}
+          {requirement && <SearchCriteria requirement={requirement} />}
 
           {/* Compare action — visible when products selected */}
           {compareList.length > 0 && (

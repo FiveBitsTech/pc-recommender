@@ -48,6 +48,7 @@ const RequirementsPage = () => {
     buildResult,
     deviceSelected,
     showRetry,
+    requirement,
     selectOption,
     selectDevice,
     retry,
@@ -110,7 +111,7 @@ const RequirementsPage = () => {
               {/* Show results when recommendations are loaded */}
               {isCompleted && recommendations.length > 0 ? (
                 <div>
-                  <AdvisorResults recommendations={recommendations} />
+                  <AdvisorResults recommendations={recommendations} requirement={requirement} />
                   <div className={styles.chatFooter}>
                     <p className={styles.chatFooterText}>
                       No es necesario saber de tecnología — solo cuéntanos qué necesitas
