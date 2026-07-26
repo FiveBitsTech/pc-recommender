@@ -1,7 +1,7 @@
 'use client'
 
 // React Imports
-import { useEffect, useRef } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 
 // Next Imports
 import Link from 'next/link'
@@ -31,7 +31,7 @@ const StyledBoxForShadow = styled('div')(({ theme }) => ({
   width: 'calc(100% + 15px)',
   height: theme.mixins.toolbar.minHeight,
   transition: 'opacity .15s ease-in-out',
-  background: `linear-gradient(var(--mui-palette-background-default) ${theme.direction === 'rtl' ? '95%' : '5%'}, rgb(var(--mui-palette-background-defaultChannel) / 0.85) 30%, rgb(var(--mui-palette-background-defaultChannel) / 0.5) 65%, rgb(var(--mui-palette-background-defaultChannel) / 0.3) 75%, transparent)`,
+  background: `linear-gradient(var(--mui-palette-customColors-menuBg) ${theme.direction === 'rtl' ? '95%' : '5%'}, color-mix(in srgb, var(--mui-palette-customColors-menuBg) 85%, transparent) 30%, color-mix(in srgb, var(--mui-palette-customColors-menuBg) 50%, transparent) 65%, color-mix(in srgb, var(--mui-palette-customColors-menuBg) 30%, transparent) 75%, transparent)`,
   '&.scrolled': {
     opacity: 1
   }
@@ -71,7 +71,7 @@ const Navigation = props => {
     }
   }
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (settings.layout === 'collapsed') {
       collapseVerticalNav(true)
     } else {
@@ -80,13 +80,16 @@ const Navigation = props => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings.layout])
 
+  const defaultCollapsed = settings.layout === 'collapsed'
+
   return (
     // eslint-disable-next-line lines-around-comment
     // Sidebar Vertical Menu
     <VerticalNav
       customStyles={navigationCustomStyles(verticalNavOptions, theme)}
       collapsedWidth={68}
-      backgroundColor='var(--mui-palette-background-default)'
+      defaultCollapsed={defaultCollapsed}
+      backgroundColor='var(--mui-palette-customColors-menuBg)'
       // eslint-disable-next-line lines-around-comment
       // The following condition adds the data-dark attribute to the VerticalNav component
       // when semiDark is enabled and the mode or systemMode is light

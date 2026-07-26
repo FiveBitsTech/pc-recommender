@@ -42,31 +42,25 @@ Público:
 
 ## Scraping
 
-### Preview (NO guarda en BD) — Postman
-
-`POST` `http://localhost:5300/api/scraping/preview`
-
-```json
-{ "source": "cyccomputer", "limit": 3 }
-```
-
-Sources de prueba: `cyccomputer` | `impacto` | `deltron` | `fixture`
-
-### Persist (sí guarda)
+Flujo: crear empresa (website + scrapeConfig) → ejecutar desde UI o API.
 
 `POST` `http://localhost:5300/api/scraping/run`
 
 ```json
-{ "source": "fixture" }
+{ "companyId": 1 }
 ```
 
-Dry-run en run:
+Dry-run:
 
 ```json
-{ "source": "impacto", "dryRun": true }
+{ "companyId": 1, "dryRun": true }
 ```
 
-Env: `SCRAPE_MODE`, `SCRAPE_CRON`, `SCRAPE_CRON_ENABLED`, `SCRAPE_SOURCES`, `SCRAPE_PREVIEW_LIMIT`, `CYCCOMPUTER_BASE_URL`, `IMPACTO_BASE_URL`, `DELTRON_BASE_URL`.
+El `scrapeConfig` de la empresa dirige el run: `categories[]` siembra el rastreo (y da la categoría de cada producto),
+`listing.productLinkSelector` localiza las fichas, `pagination` recorre las páginas y `product.*` prioriza los selectores
+de nombre/precio/imagen/specs. Si no hay categorías usables, cae al rastreo heurístico desde `baseUrl`.
+
+Env: `SCRAPE_PRODUCT_LIMIT`, `SCRAPE_REQUEST_DELAY_MS`, `SCRAPE_CATEGORY_PAGES`, `SCRAPE_MAX_LISTINGS`, `SCRAPE_CRON`, `SCRAPE_CRON_ENABLED`.
 
 ## Env
 

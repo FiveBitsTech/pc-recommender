@@ -6,6 +6,8 @@ export type CompanyRecord = {
   name: string
   website: string | null
   logoUrl: string | null
+  logoDarkBg: boolean
+  logoBgColor: string | null
   active: boolean
   scrapeConfig: unknown
 }
@@ -15,6 +17,8 @@ export type UpsertCompanyInput = {
   name: string
   website?: string | null
   logoUrl?: string | null
+  logoDarkBg?: boolean
+  logoBgColor?: string | null
   active?: boolean
   scrapeConfig?: unknown
 }

@@ -2,10 +2,12 @@
 import InitColorSchemeScript from '@mui/material/InitColorSchemeScript'
 
 // Third-party Imports
+import Script from 'next/script'
 import 'react-perfect-scrollbar/dist/css/styles.css'
 
 // Util Imports
-import { getSystemMode } from '@core/utils/serverHelpers'
+import { getThemeCookieState } from '@core/utils/serverHelpers'
+import { buildInitNavViewportScript } from '@/lib/viewport/buildInitNavViewportScript'
 
 // Style Imports
 import '@/app/globals.css'
@@ -14,22 +16,33 @@ import '@/app/globals.css'
 import '@assets/iconify-icons/generated-icons.css'
 
 export const metadata = {
-  title: 'Materio - Material Design Next.js Admin Template',
+  title: 'Cotiza - IA',
   description:
-    'Materio - Material Design Next.js Admin Dashboard Template - is the most developer friendly & highly customizable Admin Dashboard Template based on MUI v5.'
+    'PC-Cotiza IA: cotización guiada y recomendación neutral de PCs y componentes según tu presupuesto y necesidades.'
 }
 
 const RootLayout = async props => {
   const { children } = props
 
-  // Vars
-  const systemMode = await getSystemMode()
+  const { settingsCookie, systemMode } = await getThemeCookieState()
   const direction = 'ltr'
+  const navCollapsed = settingsCookie?.layout === 'collapsed'
 
   return (
-    <html id='__next' lang='en' dir={direction} suppressHydrationWarning>
-      <body className='flex is-full min-bs-full flex-auto flex-col'>
+    <html
+      id='__next'
+      lang='es'
+      dir={direction}
+      suppressHydrationWarning
+      {...(navCollapsed ? { 'data-nav-collapsed': '' } : {})}
+    >
+      <body className='flex is-full min-bs-full flex-auto flex-col' suppressHydrationWarning>
         <InitColorSchemeScript attribute='data' defaultMode={systemMode} />
+        <Script
+          id='nav-viewport-init'
+          strategy='beforeInteractive'
+          dangerouslySetInnerHTML={{ __html: buildInitNavViewportScript() }}
+        />
         {children}
       </body>
     </html>

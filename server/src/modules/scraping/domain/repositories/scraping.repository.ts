@@ -20,5 +20,6 @@ export const SCRAPING_REPOSITORY = 'SCRAPING_REPOSITORY'
 
 export interface ScrapingRepository {
   findAll(): Promise<ScrapingHistoryRecord[]>
+  findLatestSuccessBySource(source: string): Promise<ScrapingHistoryRecord | null>
   create(input: CreateScrapingHistoryInput): Promise<ScrapingHistoryRecord>
 }

@@ -1,13 +1,21 @@
+'use client'
+
 // MUI Imports
 import { useTheme } from '@mui/material/styles'
+import Chip from '@mui/material/Chip'
 
 // Component Imports
-import HorizontalNav, { Menu, MenuItem } from '@menu/horizontal-menu'
+import HorizontalNav, { Menu, MenuItem, SubMenu } from '@menu/horizontal-menu'
 import VerticalNavContent from './VerticalNavContent'
 
 // Hook Imports
 import useVerticalNav from '@menu/hooks/useVerticalNav'
 import { useSettings } from '@core/hooks/useSettings'
+import { useAuthUser } from '@/hooks/useAuthUser'
+import { useShowPerfilMenu } from '@/hooks/useShowPerfilMenu'
+
+// Data Imports
+import { panelMenuItems, perfilMenuItems } from '@components/layout/shared/appMenuItems'
 
 // Styled Component Imports
 import StyledHorizontalNavExpandIcon from '@menu/styles/horizontal/StyledHorizontalNavExpandIcon'
@@ -33,12 +41,12 @@ const RenderVerticalExpandIcon = ({ open, transitionDuration }) => (
 )
 
 const HorizontalMenu = () => {
-  // Hooks
   const verticalNavOptions = useVerticalNav()
   const theme = useTheme()
   const { settings } = useSettings()
+  const { isAdmin } = useAuthUser()
+  const { showPerfilMenu } = useShowPerfilMenu()
 
-  // Vars
   const { skin } = settings
   const { transitionDuration } = verticalNavOptions
 
@@ -70,34 +78,33 @@ const HorizontalMenu = () => {
           menuSectionStyles: verticalMenuSectionStyles(verticalNavOptions, theme)
         }}
       >
-        <MenuItem href='/' icon={<i className='ri-home-smile-line' />}>
-          Home
-        </MenuItem>
-        <MenuItem href='/about' icon={<i className='ri-information-line' />}>
-          About
-        </MenuItem>
-      </Menu>
+        {isAdmin ? (
+          <SubMenu label='Panel' icon={<i className='ri-shield-user-line' />}>
+            {panelMenuItems.map(item => (
+              <MenuItem
+                key={`panel-${item.href}`}
+                href={item.href}
+                icon={<i className={item.icon} />}
+                {...(item.suffix?.label
+                  ? { suffix: <Chip label={item.suffix.label} color={item.suffix.color || 'error'} size='small' /> }
+                  : {})}
+              >
+                {item.label}
+              </MenuItem>
+            ))}
+          </SubMenu>
+        ) : null}
 
-      {/* <Menu
-          rootStyles={menuRootStyles(theme)}
-          renderExpandIcon={({ level }) => <RenderExpandIcon level={level} />}
-          renderExpandedMenuItemIcon={{ icon: <i className='ri-circle-line' /> }}
-          menuItemStyles={menuItemStyles(theme, 'ri-circle-line')}
-          popoutMenuOffset={{
-            mainAxis: ({ level }) => (level && level > 0 ? 4 : 16),
-            alignmentAxis: 0
-          }}
-          verticalMenuProps={{
-            menuItemStyles: verticalMenuItemStyles(verticalNavOptions, theme),
-            renderExpandIcon: ({ open }) => (
-              <RenderVerticalExpandIcon open={open} transitionDuration={transitionDuration} />
-            ),
-            renderExpandedMenuItemIcon: { icon: <i className='ri-circle-line' /> },
-            menuSectionStyles: verticalMenuSectionStyles(verticalNavOptions, theme)
-          }}
-        >
-          <GenerateHorizontalMenu menuData={menuData(dictionary)} />
-        </Menu> */}
+        {!isAdmin || showPerfilMenu ? (
+          <SubMenu label='Perfil' icon={<i className='ri-user-line' />}>
+            {perfilMenuItems.map(item => (
+              <MenuItem key={`perfil-${item.href}`} href={item.href} icon={<i className={item.icon} />}>
+                {item.label}
+              </MenuItem>
+            ))}
+          </SubMenu>
+        ) : null}
+      </Menu>
     </HorizontalNav>
   )
 }

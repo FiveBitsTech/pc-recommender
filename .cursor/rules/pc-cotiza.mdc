@@ -8,5 +8,17 @@ alwaysApply: true
 - Producto: cotización **guiada** y **neutral** de PCs/componentes (no chat abierto).
 - Stack: `client/` Next+MUI · `server/` Nest+Prisma+PostgreSQL · **pnpm**.
 - Capas Nest: `application` / `domain` / `infrastructure` / `presentation` (como pasalasfijas).
-- Scraping: contrato JSON batch → ingest → `ScrapingHistory`; fixtures antes que live.
-- Skills: `.cursor/skills/pc-cotiza-context`, `.cursor/skills/pc-cotiza-scraping`.
+- Scraping: empresa (website + scrapeConfig) → probe Playwright → ingest → `ScrapingHistory`.
+- Skills: `.cursor/skills/pc-cotiza-context`, `.cursor/skills/pc-cotiza-scraping`, `.cursor/skills/pc-cotiza-ui-toasts`, `.cursor/skills/pc-cotiza-ui-stable-shell`.
+
+## Toasts / notifies
+
+- Jamás un notify puede tener un texto muy muy largo: todo lo que aparezca será en **una sola línea**.
+- Mensaje corto (resultado + dato clave). Detalle largo → UI (dialog, alert, panel), no toast.
+- Helpers: `notificationSuccesMessage` / `notificationErrorMessage` en `client/src/components/ToastNotification.js`.
+
+## Vistas / UX (anti-flicker)
+
+- Shell fijo (título, toolbar, tabs, card): **siempre montado**. No `return null` por auth pending ni skeleton de página completa.
+- Solo el cuerpo: skeleton de filas · empty · data. RTK: `isLoading`, no `isLoading || isFetching` para skeleton.
+- Detalle: skill `pc-cotiza-ui-stable-shell`.

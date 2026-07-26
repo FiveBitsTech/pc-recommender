@@ -4,18 +4,17 @@ import BlankLayout from '@layouts/BlankLayout'
 import NotFound from '@views/NotFound'
 
 // Util Imports
-import { getSystemMode, getServerMode } from '@core/utils/serverHelpers'
+import { getThemeCookieState } from '@core/utils/serverHelpers'
 
 const NotFoundPage = async () => {
-  // Vars
   const direction = 'ltr'
-  const systemMode = await getSystemMode()
-  const mode = await getServerMode()
+  const { mode, settingsCookie, systemMode } = await getThemeCookieState()
+  const serverMode = mode === 'system' ? systemMode : mode
 
   return (
-    <Providers direction={direction}>
+    <Providers direction={direction} mode={mode} settingsCookie={settingsCookie} systemMode={systemMode}>
       <BlankLayout systemMode={systemMode}>
-        <NotFound mode={mode} />
+        <NotFound mode={serverMode} />
       </BlankLayout>
     </Providers>
   )
