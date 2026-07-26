@@ -49,11 +49,32 @@ const CATEGORY_URL_PATTERNS = [
   /\/catalogue/i,
   /\/collection/i,
   /\/tienda\//i,
-  /\/shop\//i,
+  /\/shop\/?$/i,
   /\/tag\//i,
   /\/marca\//i,
   /\/brand\//i,
+  /\/ofertas?\//i,
+  /\/promocion/i,
+  /\/novedades/i,
+  /\/destacados/i,
 ]
+
+// Heuristic: a URL that has a numeric ID + text likely is a product page
+const PRODUCT_URL_PATTERN = /\/\d{2,}-[a-z]/i
+
+const isLikelyProductUrl = (url: string): boolean => {
+  const path = new URL(url).pathname.toLowerCase()
+  // Reject obvious category/listing URLs
+  if (CATEGORY_URL_PATTERNS.some(pattern => pattern.test(path))) return false
+  // Accept if matches product hints or has numeric ID pattern
+  if (PRODUCT_HREF_HINTS.some(hint => path.includes(hint))) return true
+  if (PRODUCT_URL_PATTERN.test(path)) return true
+  // Accept URLs with .html extension (common for product pages)
+  if (/\.html?$/.test(path) && path.split('/').length >= 3) return true
+  return false
+}
+
+const MIN_VALID_PRICE_PEN = 50 // Minimum realistic price for tech products in soles
 
 const productLimitFromEnv = () => Number(process.env.SCRAPE_PRODUCT_LIMIT ?? 2000)
 
@@ -163,7 +184,7 @@ export class PlaywrightStoreProbe {
       }
 
       const productUrls = [...origins.keys()]
-        .filter(url => !CATEGORY_URL_PATTERNS.some(pattern => pattern.test(url)))
+        .filter(url => isLikelyProductUrl(url))
         .slice(0, limit)
       this.logger.log(`Probe ${input.source}: products=${productUrls.length} (limit=${limit})`)
       report?.({ phase: 'products', visited: 0, total: productUrls.length })
@@ -183,14 +204,16 @@ export class PlaywrightStoreProbe {
         }
 
         if (item) {
-          // Skip items that look like category pages (no price, generic short names)
-          const isLikelyCategory = !item.product.name
-            || item.product.name.length < 10
-            || item.price.price <= 1
-            || /^(laptop|pc|desktop|memoria|componente|periferico|accesorio|monitor|tablet)/i.test(item.product.name.trim())
-              && item.product.name.trim().split(/\s+/).length <= 4
+          // Validate: must be a real product (not a category page)
+          const name = (item.product.name || '').trim()
+          const wordCount = name.split(/\s+/).length
+          const hasValidPrice = item.price.price >= MIN_VALID_PRICE_PEN
+          const hasSpecs = Object.values(item.specs ?? {}).filter(Boolean).length > 0
 
-          if (!isLikelyCategory) {
+          // A real product has: a descriptive name (5+ words), valid price, or at least specs
+          const isValidProduct = wordCount >= 4 && (hasValidPrice || hasSpecs)
+
+          if (isValidProduct) {
             products.push(item)
             if (input.onProduct) {
               try {
@@ -200,6 +223,8 @@ export class PlaywrightStoreProbe {
                 this.logger.warn(`Probe ingest failed url=${url}: ${message}`)
               }
             }
+          } else {
+            this.logger.debug(`Probe skip (invalid product): name="${name}" price=${item.price.price} words=${wordCount}`)
           }
         }
 
@@ -513,6 +538,8 @@ export class PlaywrightStoreProbe {
       const metaBrand =
         document.querySelector('meta[property="product:brand"]')?.getAttribute('content') ||
         document.querySelector('meta[itemprop="brand"]')?.getAttribute('content') ||
+        document.querySelector('[itemprop="brand"]')?.textContent?.trim() ||
+        document.querySelector('.manufacturer_name, .brand-name, [class*="manufacturer" i], [class*="brand" i]')?.textContent?.replace(/^.*:/, '').trim() ||
         null
 
       const attr = (selector: string, name: string) =>

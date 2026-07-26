@@ -33,8 +33,8 @@ export class IngestScrapedBatchUseCase {
     const productUrl = item.product.productUrl
     if (!productUrl) return false
 
-    // Skip products with invalid prices (0 or 1 are not real prices)
-    if (!item.price.price || item.price.price <= 1) return false
+    // Skip products with invalid prices (not real tech product prices)
+    if (!item.price.price || item.price.price < 50) return false
 
     // Convert USD to PEN so all prices are stored in soles
     let finalPrice = item.price.price
