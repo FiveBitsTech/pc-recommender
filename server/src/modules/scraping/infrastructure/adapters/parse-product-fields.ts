@@ -380,11 +380,12 @@ export const detectPrice = (signals: ProductSignals): { price: number; currency:
   // First pass: look for explicit PEN/soles prices (highest priority)
   for (const raw of signals.priceCandidates) {
     if (/S\/|soles|\bpen\b/i.test(raw)) {
-      // Extract the number after S/. or S/ — grab everything that looks like a price number
-      const penMatch = raw.match(/S\/\.?\s*([0-9][0-9.,]*[0-9])/i)
-        || raw.match(/([0-9][0-9.,]*[0-9])\s*(?:soles|pen)\b/i)
-      if (penMatch) {
-        const value = parseMoney(penMatch[1])
+      // Isolate the soles portion: split on "o $", "o$", "/ $", or just "$" to remove USD part
+      const solePart = raw.split(/\s*o\s*\$|\s*\/\s*\$|\s*\$\s*[0-9]/i)[0]
+      // Remove the S/. prefix and parse the remaining number
+      const numericPart = solePart.replace(/.*S\/\.?\s*/i, '').replace(/.*soles\s*/i, '').replace(/.*pen\s*/i, '').trim()
+      if (numericPart) {
+        const value = parseMoney(numericPart)
         if (value > 1) {
           return { price: value, currency: 'PEN' }
         }
