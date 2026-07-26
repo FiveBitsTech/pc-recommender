@@ -17,6 +17,6 @@ export class ComparisonsController {
 
   @Post('compare')
   compare(@Body() dto: CompareProductsDto) {
-    return this.compareProductsUseCase.execute(dto.productOneId, dto.productTwoId)
+    return this.compareProductsUseCase.execute(dto.productIds)
   }
 }
