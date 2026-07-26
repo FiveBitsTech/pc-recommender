@@ -380,17 +380,22 @@ export const detectPrice = (signals: ProductSignals): { price: number; currency:
   // First pass: look for explicit PEN/soles prices (highest priority)
   for (const raw of signals.priceCandidates) {
     if (/S\/|soles|\bpen\b/i.test(raw)) {
-      const value = parseMoney(raw)
-      if (value > 1) {
-        return { price: value, currency: 'PEN' }
+      // Extract only the soles portion from strings like "$ 165,00 (S/ 572,55)"
+      const penMatch = raw.match(/S\/\.?\s*([0-9]{1,3}(?:[.,][0-9]{3})*(?:[.,][0-9]{2})?)/)
+      if (penMatch) {
+        const value = parseMoney(penMatch[1])
+        if (value > 1) {
+          return { price: value, currency: 'PEN' }
+        }
       }
     }
   }
 
-  // Second pass: take first valid price (non-PEN candidates)
+  // Second pass: take first valid price from candidates that don't mix currencies
   for (const raw of signals.priceCandidates) {
+    // Skip candidates that contain both $ and S/ (mixed currency strings)
+    if (/\$/.test(raw) && /S\//.test(raw)) continue
     const value = parseMoney(raw)
-    // Skip values <= 1 — these are flags/booleans, not real prices
     if (value > 1) {
       return { price: value, currency: declared ?? currencyFromRaw(raw) ?? 'PEN' }
     }
