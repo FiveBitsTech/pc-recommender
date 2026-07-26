@@ -25,12 +25,9 @@ const PRODUCT_HREF_HINTS = [
   'products',
   '/p/',
   'item',
-  'laptop',
-  'computadora',
-  'pc-',
-  'notebook',
-  'componente',
-  'periferico',
+  '/dp/',
+  'ficha',
+  'detalle',
 ]
 
 const LISTING_HREF_HINTS = [
@@ -42,13 +39,20 @@ const LISTING_HREF_HINTS = [
   'tienda',
   'shop',
   'collection',
-  'laptop',
-  'computadora',
-  'notebook',
-  'componente',
-  'periferico',
-  'producto',
-  'products',
+]
+
+// URLs that should NEVER be treated as product pages
+const CATEGORY_URL_PATTERNS = [
+  /\/categor/i,
+  /\/category/i,
+  /\/catalogo/i,
+  /\/catalogue/i,
+  /\/collection/i,
+  /\/tienda\//i,
+  /\/shop\//i,
+  /\/tag\//i,
+  /\/marca\//i,
+  /\/brand\//i,
 ]
 
 const productLimitFromEnv = () => Number(process.env.SCRAPE_PRODUCT_LIMIT ?? 2000)
@@ -158,7 +162,9 @@ export class PlaywrightStoreProbe {
         this.logger.log(`Probe ${input.source}: heuristic crawl found=${origins.size}`)
       }
 
-      const productUrls = [...origins.keys()].slice(0, limit)
+      const productUrls = [...origins.keys()]
+        .filter(url => !CATEGORY_URL_PATTERNS.some(pattern => pattern.test(url)))
+        .slice(0, limit)
       this.logger.log(`Probe ${input.source}: products=${productUrls.length} (limit=${limit})`)
       report?.({ phase: 'products', visited: 0, total: productUrls.length })
 
@@ -177,13 +183,22 @@ export class PlaywrightStoreProbe {
         }
 
         if (item) {
-          products.push(item)
-          if (input.onProduct) {
-            try {
-              await input.onProduct(item)
-            } catch (error) {
-              const message = error instanceof Error ? error.message : String(error)
-              this.logger.warn(`Probe ingest failed url=${url}: ${message}`)
+          // Skip items that look like category pages (no price, generic short names)
+          const isLikelyCategory = !item.product.name
+            || item.product.name.length < 10
+            || item.price.price <= 1
+            || /^(laptop|pc|desktop|memoria|componente|periferico|accesorio|monitor|tablet)/i.test(item.product.name.trim())
+              && item.product.name.trim().split(/\s+/).length <= 4
+
+          if (!isLikelyCategory) {
+            products.push(item)
+            if (input.onProduct) {
+              try {
+                await input.onProduct(item)
+              } catch (error) {
+                const message = error instanceof Error ? error.message : String(error)
+                this.logger.warn(`Probe ingest failed url=${url}: ${message}`)
+              }
             }
           }
         }
@@ -391,6 +406,7 @@ export class PlaywrightStoreProbe {
 
       const title =
         pick(selectors.name) ||
+        document.querySelector('[itemprop="name"]')?.textContent?.trim() ||
         document.querySelector('h1')?.textContent?.trim() ||
         document.querySelector('meta[property="og:title"]')?.getAttribute('content') ||
         document.title
