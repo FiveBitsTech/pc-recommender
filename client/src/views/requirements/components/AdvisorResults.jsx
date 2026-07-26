@@ -11,6 +11,7 @@ const AdvisorResults = ({ recommendations, onViewDetail }) => {
   const [compareList, setCompareList] = useState([])
   const [activeTab, setActiveTab] = useState('recommendations')
   const [compareResult, setCompareResult] = useState(null)
+  const [mobileDetailView, setMobileDetailView] = useState(false)
 
   if (!recommendations || recommendations.length === 0) return null
 
@@ -34,8 +35,38 @@ const AdvisorResults = ({ recommendations, onViewDetail }) => {
     setActiveTab('recommendations')
   }
 
+  const handleViewDetail = (rec) => {
+    if (selectedRec?.id === rec.id) {
+      setSelectedRec(null)
+      setMobileDetailView(false)
+    } else {
+      setSelectedRec(rec)
+      setMobileDetailView(true)
+    }
+  }
+
+  const handleCloseDetail = () => {
+    setSelectedRec(null)
+    setMobileDetailView(false)
+  }
+
   return (
     <div className={styles.resultsWrapper}>
+      {/* Mobile fullscreen detail overlay */}
+      {mobileDetailView && selectedRec && (
+        <div className={styles.mobileDetailOverlay}>
+          <div className={styles.mobileDetailHeader}>
+            <button className={styles.mobileBackButton} onClick={handleCloseDetail}>
+              <i className='ri-arrow-left-line' />
+              Volver a recomendaciones
+            </button>
+          </div>
+          <div className={styles.mobileDetailContent}>
+            <ProductDetail recommendation={selectedRec} onClose={handleCloseDetail} />
+          </div>
+        </div>
+      )}
+
       {/* Tabs */}
       <div className={styles.tabBar}>
         <button
@@ -150,7 +181,7 @@ const AdvisorResults = ({ recommendations, onViewDetail }) => {
                   )}
 
                   {/* Action button */}
-                  <button className={styles.detailButton} data-active={selectedRec?.id === rec.id ? 'true' : 'false'} onClick={() => setSelectedRec(selectedRec?.id === rec.id ? null : rec)}>
+                  <button className={styles.detailButton} data-active={selectedRec?.id === rec.id ? 'true' : 'false'} onClick={() => handleViewDetail(rec)}>
                     {selectedRec?.id === rec.id ? 'Cerrar detalles' : 'Ver detalles'}
                     <i className={selectedRec?.id === rec.id ? 'ri-arrow-up-line' : 'ri-arrow-right-line'} />
                   </button>
@@ -176,9 +207,11 @@ const AdvisorResults = ({ recommendations, onViewDetail }) => {
             ))}
           </div>
 
-          {/* Product detail */}
+          {/* Product detail — desktop only (inline) */}
           {selectedRec && (
-            <ProductDetail recommendation={selectedRec} onClose={() => setSelectedRec(null)} />
+            <div className={styles.desktopDetail}>
+              <ProductDetail recommendation={selectedRec} onClose={handleCloseDetail} />
+            </div>
           )}
         </>
       )}
