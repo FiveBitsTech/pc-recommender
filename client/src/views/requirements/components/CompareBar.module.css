@@ -145,10 +145,18 @@
   color: rgba(46, 38, 61, 0.7);
 }
 
+.specsTableHeader.threeColumns {
+  grid-template-columns: 100px 1fr 1fr 1fr;
+}
+
 .specsTableRow {
   display: grid; grid-template-columns: 120px 1fr 1fr;
   padding: 10px 16px; border-top: 1px solid #f0f0f0;
   font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px;
+}
+
+.specsTableRow.threeColumns {
+  grid-template-columns: 100px 1fr 1fr 1fr;
 }
 
 .specCat { font-weight: 600; color: rgba(46, 38, 61, 0.9); }
@@ -174,10 +182,18 @@
   color: rgba(46, 38, 61, 0.7);
 }
 
+.ratingsHeader.threeColumnsRatings {
+  grid-template-columns: 120px 1fr 1fr 1fr;
+}
+
 .ratingsRow {
   display: grid; grid-template-columns: 140px 1fr 1fr;
   padding: 10px 16px; border-top: 1px solid #f0f0f0;
   align-items: center;
+}
+
+.ratingsRow.threeColumnsRatings {
+  grid-template-columns: 120px 1fr 1fr 1fr;
 }
 
 .ratingLabel {
@@ -189,12 +205,123 @@
 .stars i { font-size: 16px; color: #ff9800; }
 .starsNumber { display: none; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600; font-size: 13px; color: #ff9800; }
 
+/* Desktop/Mobile visibility toggles */
+.specsDesktop { display: block; }
+.specsMobile { display: none; flex-direction: column; gap: 8px; }
+.ratingsDesktop { display: block; }
+.ratingsMobile { display: none; flex-direction: column; gap: 8px; }
+
+/* Mobile spec cards */
+.specCard {
+  background: #f7f9fc;
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.specCardTitle {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  color: rgba(46, 38, 61, 0.9);
+  margin: 0 0 8px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.specCardItems {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.specCardItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 8px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #f0f0f0;
+}
+
+.specCardItem.specCardWinner {
+  border-color: #3d95ee;
+  background: #f0f5fd;
+}
+
+.specCardLabel {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 500;
+  font-size: 10px;
+  color: rgba(46, 38, 61, 0.6);
+  flex-shrink: 0;
+}
+
+.specCardValue {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 600;
+  font-size: 10px;
+  color: rgba(46, 38, 61, 0.9);
+  text-align: right;
+  max-width: 65%;
+  word-break: break-word;
+}
+
+.specCardWinner .specCardValue {
+  color: #3d95ee;
+}
+
+/* Mobile rating cards */
+.ratingCard {
+  background: #f7f9fc;
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.ratingCardTitle {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  color: rgba(46, 38, 61, 0.9);
+  margin: 0 0 8px 0;
+}
+
+.ratingCardItems {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ratingCardItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 8px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #f0f0f0;
+}
+
+.ratingCardLabel {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 500;
+  font-size: 10px;
+  color: rgba(46, 38, 61, 0.6);
+}
+
 @media (max-width: 768px) {
   .header { flex-direction: column; align-items: stretch; gap: 12px; }
   .headerActions { justify-content: stretch; }
   .compareButton, .closeButton { flex: 1; justify-content: center; }
-  .specsTableHeader, .specsTableRow { grid-template-columns: 80px 1fr 1fr; font-size: 12px; padding: 8px 12px; }
-  .ratingsHeader, .ratingsRow { grid-template-columns: 100px 1fr 1fr; font-size: 12px; }
+
+  /* Hide desktop tables, show mobile lists */
+  .specsDesktop { display: none !important; }
+  .specsMobile { display: flex !important; }
+  .ratingsDesktop { display: none !important; }
+  .ratingsMobile { display: flex !important; }
+
   .recoCard { padding: 16px; }
   .recoName { font-size: 15px; }
 
@@ -204,6 +331,7 @@
   .recoTradeoffs { display: flex; flex-direction: column; gap: 4px; }
   .tradeoffItem { display: block; margin-right: 0; }
 
+  /* In mobile rating cards, show number instead of stars */
   .stars { display: none; }
   .starsNumber { display: inline; }
 }

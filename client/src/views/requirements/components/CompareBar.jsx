@@ -157,28 +157,55 @@ const CompareBar = ({ selectedProducts, onRemove, onClear, onCompareComplete, on
           {/* Specs table */}
           {result.specs_comparison?.length > 0 && (
             <div className={styles.specsSection}>
-              <div className={styles.specsTableHeader} style={hasThree ? { gridTemplateColumns: '100px 1fr 1fr 1fr' } : undefined}>
-                <span>Característica</span>
-                <span>{p1Name}</span>
-                <span>{p2Name}</span>
-                {hasThree && <span>{p3Name}</span>}
-              </div>
-              {result.specs_comparison.map((spec, i) => (
-                <div key={i} className={styles.specsTableRow} style={hasThree ? { gridTemplateColumns: '100px 1fr 1fr 1fr' } : undefined}>
-                  <span className={styles.specCat}>{spec.category}</span>
-                  <span className={spec.winner === 'product1' ? styles.specWin : styles.specNormal}>
-                    {spec.winner === 'product1' && '⭐ '}{spec.product1}
-                  </span>
-                  <span className={spec.winner === 'product2' ? styles.specWin : styles.specNormal}>
-                    {spec.winner === 'product2' && '⭐ '}{spec.product2}
-                  </span>
-                  {hasThree && (
-                    <span className={spec.winner === 'product3' ? styles.specWin : styles.specNormal}>
-                      {spec.winner === 'product3' && '⭐ '}{spec.product3}
-                    </span>
-                  )}
+              {/* Desktop: grid table */}
+              <div className={styles.specsDesktop}>
+                <div className={`${styles.specsTableHeader} ${hasThree ? styles.threeColumns : ''}`}>
+                  <span>Característica</span>
+                  <span>{p1Name}</span>
+                  <span>{p2Name}</span>
+                  {hasThree && <span>{p3Name}</span>}
                 </div>
-              ))}
+                {result.specs_comparison.map((spec, i) => (
+                  <div key={i} className={`${styles.specsTableRow} ${hasThree ? styles.threeColumns : ''}`}>
+                    <span className={styles.specCat}>{spec.category}</span>
+                    <span className={spec.winner === 'product1' ? styles.specWin : styles.specNormal}>
+                      {spec.winner === 'product1' && '⭐ '}{spec.product1}
+                    </span>
+                    <span className={spec.winner === 'product2' ? styles.specWin : styles.specNormal}>
+                      {spec.winner === 'product2' && '⭐ '}{spec.product2}
+                    </span>
+                    {hasThree && (
+                      <span className={spec.winner === 'product3' ? styles.specWin : styles.specNormal}>
+                        {spec.winner === 'product3' && '⭐ '}{spec.product3}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {/* Mobile: list cards */}
+              <div className={styles.specsMobile}>
+                {result.specs_comparison.map((spec, i) => (
+                  <div key={i} className={styles.specCard}>
+                    <p className={styles.specCardTitle}>{spec.category}</p>
+                    <div className={styles.specCardItems}>
+                      <div className={`${styles.specCardItem} ${spec.winner === 'product1' ? styles.specCardWinner : ''}`}>
+                        <span className={styles.specCardLabel}>{p1Name}</span>
+                        <span className={styles.specCardValue}>{spec.product1}</span>
+                      </div>
+                      <div className={`${styles.specCardItem} ${spec.winner === 'product2' ? styles.specCardWinner : ''}`}>
+                        <span className={styles.specCardLabel}>{p2Name}</span>
+                        <span className={styles.specCardValue}>{spec.product2}</span>
+                      </div>
+                      {hasThree && (
+                        <div className={`${styles.specCardItem} ${spec.winner === 'product3' ? styles.specCardWinner : ''}`}>
+                          <span className={styles.specCardLabel}>{p3Name}</span>
+                          <span className={styles.specCardValue}>{spec.product3}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
@@ -186,19 +213,46 @@ const CompareBar = ({ selectedProducts, onRemove, onClear, onCompareComplete, on
           {result.ratings?.length > 0 && (
             <div className={styles.ratingsSection}>
               <p className={styles.ratingsTitle}>Puntuaciones por categoría</p>
-              <div className={styles.ratingsGrid}>
-                <div className={styles.ratingsHeader} style={hasThree ? { gridTemplateColumns: '120px 1fr 1fr 1fr' } : undefined}>
-                  <span />
-                  <span>{p1Name}</span>
-                  <span>{p2Name}</span>
-                  {hasThree && <span>{p3Name}</span>}
+              {/* Desktop: grid table */}
+              <div className={styles.ratingsDesktop}>
+                <div className={styles.ratingsGrid}>
+                  <div className={`${styles.ratingsHeader} ${hasThree ? styles.threeColumnsRatings : ''}`}>
+                    <span />
+                    <span>{p1Name}</span>
+                    <span>{p2Name}</span>
+                    {hasThree && <span>{p3Name}</span>}
+                  </div>
+                  {result.ratings.map((r, i) => (
+                    <div key={i} className={`${styles.ratingsRow} ${hasThree ? styles.threeColumnsRatings : ''}`}>
+                      <span className={styles.ratingLabel}>{r.category}</span>
+                      <span><Stars score={r.product1Score} /></span>
+                      <span><Stars score={r.product2Score} /></span>
+                      {hasThree && <span><Stars score={r.product3Score || 0} /></span>}
+                    </div>
+                  ))}
                 </div>
+              </div>
+              {/* Mobile: list cards */}
+              <div className={styles.ratingsMobile}>
                 {result.ratings.map((r, i) => (
-                  <div key={i} className={styles.ratingsRow} style={hasThree ? { gridTemplateColumns: '120px 1fr 1fr 1fr' } : undefined}>
-                    <span className={styles.ratingLabel}>{r.category}</span>
-                    <span><Stars score={r.product1Score} /></span>
-                    <span><Stars score={r.product2Score} /></span>
-                    {hasThree && <span><Stars score={r.product3Score || 0} /></span>}
+                  <div key={i} className={styles.ratingCard}>
+                    <p className={styles.ratingCardTitle}>{r.category}</p>
+                    <div className={styles.ratingCardItems}>
+                      <div className={styles.ratingCardItem}>
+                        <span className={styles.ratingCardLabel}>{p1Name}</span>
+                        <span><Stars score={r.product1Score} /></span>
+                      </div>
+                      <div className={styles.ratingCardItem}>
+                        <span className={styles.ratingCardLabel}>{p2Name}</span>
+                        <span><Stars score={r.product2Score} /></span>
+                      </div>
+                      {hasThree && (
+                        <div className={styles.ratingCardItem}>
+                          <span className={styles.ratingCardLabel}>{p3Name}</span>
+                          <span><Stars score={r.product3Score || 0} /></span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
