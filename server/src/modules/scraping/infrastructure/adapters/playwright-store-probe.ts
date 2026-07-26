@@ -505,7 +505,13 @@ export class PlaywrightStoreProbe {
       const priceCandidates: string[] = []
       const pushPrice = (value: string | null | undefined) => {
         const clean = (value ?? '').trim()
-        if (clean && /\d/.test(clean) && priceCandidates.length < 40) priceCandidates.push(clean)
+        if (!clean || !/\d/.test(clean) || priceCandidates.length >= 40) return
+        priceCandidates.push(clean)
+        // If text contains a PEN price in parentheses like "(S/ 2.425,53)", extract it separately
+        const penMatch = clean.match(/\(?\s*(S\/\.?\s*[0-9]{1,3}(?:[.,][0-9]{3})*(?:[.,][0-9]{2})?)\s*\)?/)
+        if (penMatch && penMatch[1] && penMatch[1] !== clean) {
+          priceCandidates.push(penMatch[1])
+        }
       }
 
       // Prioridad: datos estructurados > meta > selector del config > atributos > clases > texto.

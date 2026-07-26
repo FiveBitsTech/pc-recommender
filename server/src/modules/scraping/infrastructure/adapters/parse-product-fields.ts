@@ -376,6 +376,18 @@ const currencyFromRaw = (raw: string): string | null => {
 
 export const detectPrice = (signals: ProductSignals): { price: number; currency: string } => {
   const declared = normalizeCurrency(signals.priceCurrency)
+
+  // First pass: look for explicit PEN/soles prices (highest priority)
+  for (const raw of signals.priceCandidates) {
+    if (/S\/|soles|\bpen\b/i.test(raw)) {
+      const value = parseMoney(raw)
+      if (value > 1) {
+        return { price: value, currency: 'PEN' }
+      }
+    }
+  }
+
+  // Second pass: take first valid price (non-PEN candidates)
   for (const raw of signals.priceCandidates) {
     const value = parseMoney(raw)
     // Skip values <= 1 — these are flags/booleans, not real prices
@@ -383,5 +395,6 @@ export const detectPrice = (signals: ProductSignals): { price: number; currency:
       return { price: value, currency: declared ?? currencyFromRaw(raw) ?? 'PEN' }
     }
   }
+
   return { price: 0, currency: declared ?? 'PEN' }
 }
