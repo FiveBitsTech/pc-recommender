@@ -1,86 +1,117 @@
-# PC Recommender — Server
+# PC COTIZA-IA — Server
 
-NestJS + Prisma + PostgreSQL.
+NestJS 11 + Prisma + PostgreSQL + OpenAI GPT-4o-mini + Playwright.
 
 ## Setup
 
 ```bash
 cd server
-# crea la BD pc_recommender en Postgres
 pnpm install
-pnpm prisma migrate deploy   # o: pnpm prisma:migrate
-pnpm prisma:generate
-pnpm db:seed
-pnpm serve
+cp .env.example .env          # completar DATABASE_URL, JWT_SECRET, OPENAI_API_KEY
+pnpm prisma migrate deploy    # aplica migraciones
+pnpm prisma:generate          # genera el cliente Prisma
+pnpm db:seed                  # crea usuario admin
+pnpm serve                    # inicia en modo watch
 ```
 
 API: `http://localhost:5300/api`
 
-## Auth (admin mínimo)
+## Variables de entorno
 
-Seed:
-- email: `admin@pc-cotiza.local`
-- password: `Admin123!`
+| Variable | Descripción | Default |
+|----------|-------------|---------|
+| `PORT` | Puerto del servidor | `5300` |
+| `DATABASE_URL` | Conexión PostgreSQL | — |
+| `CORS_ORIGIN` | URL del frontend | `http://localhost:3000` |
+| `JWT_SECRET` | Secreto para firmar tokens | `change_me` |
+| `JWT_EXPIRES_IN` | Expiración del token | `7d` |
+| `ADMIN_EMAIL` | Email del admin (seed) | `admin@pc-cotiza.local` |
+| `ADMIN_PASSWORD` | Password del admin (seed) | `Admin123!` |
+| `OPENAI_API_KEY` | API key de OpenAI (recomendaciones, builder, comparador) | — |
+| `SCRAPE_PRODUCT_LIMIT` | Max productos por empresa | `2000` |
+| `SCRAPE_CATEGORY_PAGES` | Listados en rastreo heurístico | `12` |
+| `SCRAPE_MAX_LISTINGS` | Tope de listados con categorías | `60` |
+| `SCRAPE_CRON` | Expresión cron para scraping automático | `0 3 * * *` |
+| `SCRAPE_CRON_ENABLED` | Activar cron de scraping | `false` |
+
+## Auth
+
+Seed crea un admin:
+- Email: `admin@pc-cotiza.local`
+- Password: `Admin123!` (o lo que definas en `ADMIN_PASSWORD`)
 
 ```bash
-# login
 POST /api/auth/login
 { "email": "admin@pc-cotiza.local", "password": "Admin123!" }
-
-# usar header: Authorization: Bearer <accessToken>
+# Respuesta: { accessToken: "..." }
+# Usar header: Authorization: Bearer <accessToken>
 ```
 
-Admin:
-- `POST /api/companies` — upsert empresa + scrapeConfig
-- `PATCH /api/companies/:id`
-- `GET /api/companies/admin/all`
-- scraping `preview` / `run` / `history` / `sources`
+## Endpoints principales
 
-Público:
-- `GET /api/companies` (activas)
-- `GET /api/products`
+### Públicos
+- `POST /api/auth/login` — login
+- `GET /api/companies` — empresas activas
+- `GET /api/products` — productos con precios
+
+### Requieren auth (usuario)
+- `POST /api/requirements` — crear requerimiento (inicia flujo de cotización)
+- `GET /api/requirements` — mis requerimientos
+- `GET /api/recommendations/:requirementId` — recomendaciones IA para un requerimiento
+- `POST /api/comparisons/compare` — comparar 2-3 productos con IA
+- `POST /api/builder/build` — generar configuración de PC con IA
+
+### Requieren auth (admin)
+- `POST /api/companies` — crear/editar empresa + scrapeConfig
+- `POST /api/scraping/run` — ejecutar scraping (`{ companyId, dryRun? }`)
+- `GET /api/scraping/progress?companyId=` — progreso en tiempo real
+- `GET /api/scraping/history` — historial de scraping
+
+## Flujos con IA (OpenAI GPT-4o-mini)
+
+1. **Recomendaciones** — Dado un requerimiento (uso, presupuesto, prioridad, tipo de equipo), busca productos en BD y pide a la IA que seleccione los 3 mejores con score, ventajas, desventajas y evaluación de precio.
+
+2. **Armador de PCs** — Dado uso y presupuesto, busca componentes reales en BD y pide a la IA una configuración completa con validación de compatibilidad, consumo eléctrico y upgrades futuros.
+
+3. **Comparador** — Dados 2-3 productos, la IA analiza cuál es mejor según cada caso de uso, compara specs y puntúa por categoría.
+
+4. **scrapeConfig IA** — Al agregar una empresa nueva, la IA analiza la estructura del sitio web y genera el JSON de configuración para el scraper.
 
 ## Scraping
 
-Flujo: crear empresa (website + scrapeConfig) → ejecutar desde UI o API.
+Flujo: crear empresa (website + scrapeConfig) → `POST /api/scraping/run` con `companyId` → Playwright recorre categorías → extrae productos → persiste en BD.
 
-`POST` `http://localhost:5300/api/scraping/run`
+El `scrapeConfig` de la empresa dirige el run:
+- `categories[]` — URLs semilla para el rastreo
+- `listing.productLinkSelector` — selector CSS para encontrar links de producto
+- `pagination` — tipo (`query`/`link`) + selector o param para paginar
+- `product.*` — selectores de nombre, precio, imagen, specs en la ficha
 
-```json
-{ "companyId": 1 }
-```
-
-Dry-run:
-
-```json
-{ "companyId": 1, "dryRun": true }
-```
-
-El `scrapeConfig` de la empresa dirige el run: `categories[]` siembra el rastreo (y da la categoría de cada producto),
-`listing.productLinkSelector` localiza las fichas, `pagination` recorre las páginas y `product.*` prioriza los selectores
-de nombre/precio/imagen/specs. Si no hay categorías usables, cae al rastreo heurístico desde `baseUrl`.
-
-Env: `SCRAPE_PRODUCT_LIMIT`, `SCRAPE_REQUEST_DELAY_MS`, `SCRAPE_CATEGORY_PAGES`, `SCRAPE_MAX_LISTINGS`, `SCRAPE_CRON`, `SCRAPE_CRON_ENABLED`.
-
-## Env
-
-| Archivo | Uso |
-|---|---|
-| `.env.example` | Plantilla |
-| `.env.development` | Desarrollo |
-| `.env.production` | Producción |
-| `.env.local` | Overrides locales (no se sube a git) |
-
-Copia `.env.example` → `.env.local` y ajusta `DATABASE_URL` antes de migrar.
+Sin categorías usables, cae al rastreo heurístico desde `baseUrl`.
 
 ## Módulos
 
-`companies` · `products` · `tags` · `requirements` · `recommendations` · `comparisons` · `scraping`
+| Módulo | Descripción |
+|--------|-------------|
+| `auth` | Login JWT, guards, estrategia Passport |
+| `companies` | CRUD de empresas + scrapeConfig |
+| `products` | Catálogo de productos con precios |
+| `tags` | Tags de productos |
+| `requirements` | Requerimientos del usuario (uso, presupuesto, prioridad) |
+| `recommendations` | Recomendaciones IA basadas en requerimientos |
+| `comparisons` | Comparador de productos con IA |
+| `builder` | Armador de PCs con IA |
+| `scraping` | Scraping con Playwright + ingest + cron |
 
-Cada uno: `domain` → `application` → `infrastructure` → `presentation`.
+Cada módulo: `domain/` → `application/` → `infrastructure/` → `presentation/`.
 
-## Skills Cursor
+## Scripts
 
-- `.cursor/skills/pc-cotiza-context`
-- `.cursor/skills/pc-cotiza-scraping`
-- `.cursor/rules/pc-cotiza.mdc`
+```bash
+pnpm serve           # dev con watch
+pnpm build           # compilar
+pnpm start:prod      # producción
+pnpm prisma:migrate  # nueva migración
+pnpm prisma:studio   # UI de Prisma
+pnpm db:seed         # seed admin
+```
