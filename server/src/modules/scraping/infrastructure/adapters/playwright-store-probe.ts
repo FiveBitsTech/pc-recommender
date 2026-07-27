@@ -28,6 +28,7 @@ const PRODUCT_HREF_HINTS = [
   '/dp/',
   'ficha',
   'detalle',
+  'componentes',
 ]
 
 const LISTING_HREF_HINTS = [
